@@ -1025,6 +1025,7 @@ function authMsg(err){
     if(c.indexOf("network-request-failed")>-1)return "網路連線失敗，請確認有網路";
     if(c.indexOf("too-many-requests")>-1)return "嘗試太多次，請稍後再試";
     if(c.indexOf("operation-not-allowed")>-1)return "目前不開放註冊";
+    if(c.indexOf("permission-denied")>-1)return "儲存被拒絕（請主辦檢查 Firestore 規則）";
     return err.message||"發生錯誤，請稍後再試";
 }
 
@@ -1107,20 +1108,34 @@ function drawCharacter(canvasId){
     const hair=cachedImg(hairFiles[hairIndex]);
     const cloth=cachedImg(clothesFiles[clothesIndex]);
     const wing=(mask.wings&&wingFiles[wingIndex])?cachedImg(wingFiles[wingIndex]):null;
-    const imgs=[body,hair,cloth];
-    if(wing)imgs.push(wing);
-    if(!imgs.every(function(im){return im.complete&&im.naturalWidth>0;})){
-        imgs.forEach(function(im){
-            if(im.complete&&im.naturalWidth>0)return;
-            if(!im._q){im._q=true;im.onload=function(){im._q=false;drawCharacter(canvasId);};}
-        });
-        return;
-    }
+    const draw=[];
+    if(wing)draw.push([wing]);
+    if(mask.body)draw.push([body]);
+    if(mask.clothes)draw.push([cloth]);
+    if(mask.hair)draw.push([hair]);
+    let pending=false;
+    draw.forEach(function(item){
+        const im=item[0];
+        if(im._bad)return;
+        if(im.complete&&im.naturalWidth>0)return;
+        pending=true;
+        if(!im._watch){
+            im._watch=true;
+            im.onload=function(){im._bad=false;drawCharacter(canvasId);};
+            im.onerror=function(){
+                im._bad=true;
+                console.warn("角色圖層載入失敗: "+im.src);
+                drawCharacter(canvasId);
+            };
+        }
+    });
+    if(pending)return;
     ctx.clearRect(0,0,canvas.width,canvas.height);
-    if(wing)ctx.drawImage(wing,frameX,frameY,size,size,0,0,size,size);
-    if(mask.body)ctx.drawImage(body,frameX,frameY,size,size,0,0,size,size);
-    if(mask.clothes)ctx.drawImage(cloth,frameX,frameY,size,size,0,0,size,size);
-    if(mask.hair)ctx.drawImage(hair,frameX,frameY,size,size,0,0,size,size);
+    draw.forEach(function(item){
+        const im=item[0];
+        if(im._bad||!(im.complete&&im.naturalWidth>0))return;
+        ctx.drawImage(im,frameX,frameY,size,size,0,0,size,size);
+    });
     if(canvasId==="gameCanvas"){
         const nameEl=document.getElementById("playerNameGame");
         if(nameEl)nameEl.style.bottom=labelBottomPx(48,measureContentTop(canvas))+"px";
@@ -1223,6 +1238,7 @@ function login(){
             showScreen("createPage");
         }
     }).catch(function(e){
+        console.error("login error",e);
         toast(authMsg(e));
     });
 }
@@ -1274,6 +1290,7 @@ function startAdventure(){
         document.getElementById("previewInfo").innerHTML=data.name+"<br>Lv.1<br>EXP 0/20";
         drawCharacter("previewCanvas");
     }).catch(function(e){
+        console.error("startAdventure error",e);
         toast(authMsg(e));
     });
 }
@@ -1288,6 +1305,7 @@ function deleteCharacter(){
         });
         showScreen("loginPage");
     }).catch(function(e){
+        console.error("deleteCharacter error",e);
         toast(authMsg(e));
     });
 }
@@ -2389,6 +2407,7 @@ document.addEventListener("keydown",function(e){
     window.addEventListener("orientationchange",function(){setTimeout(function(){if(currentUser)refreshView();},150);});
 })();
 loadCollJson();
+[bodyFiles,hairFiles,clothesFiles,wingFiles].forEach(function(arr){arr.forEach(function(p){if(p)cachedImg(p);});});
 </script>
 </body>
 </html>
