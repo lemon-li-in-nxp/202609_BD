@@ -376,6 +376,7 @@ input:focus{border-color:#ffb703;}
 .girlCard:active:not(.off){transform:translateY(2px);box-shadow:0 1px 0 rgba(0,0,0,.25);}
 
 /* 照片牆 */
+#photoWall{z-index:5600;}
 .pgrid{display:flex;flex-wrap:wrap;gap:8px;}
 .pcell{width:calc(33.333% - 6px);position:relative;}
 .pcell img{width:100%;height:auto;border:3px solid #1b4f8f;border-radius:8px;display:block;}
@@ -499,7 +500,7 @@ input:focus{border-color:#ffb703;}
             <button class="btn btn-pixel btn-sm" onclick="openPhotoWall()">照片牆</button>
             <div class="badge" id="photoCount" style="margin-left:auto;font-size:13px;background:#457b9d;color:#fff;border:2px solid #5f93c8;border-radius:8px;padding:4px 10px;">已完成 0/45</div>
         </div>
-        <div style="font-size:13px;color:#7f9ab3;margin-bottom:8px;">每張照片 +10 EXP。拍到/上傳「任何」照片就算完成！</div>
+        <div style="font-size:13px;color:#7f9ab3;margin-bottom:8px;">每張照片 +15 EXP。拍到/上傳「任何」照片就算完成！</div>
         <div id="questList"></div>
     </div>
 </div>
@@ -509,7 +510,7 @@ input:focus{border-color:#ffb703;}
     <div class="mbox">
         <button class="close" onclick="closeOverlay('photoWall')">✕</button>
         <h2>🖼️ 我的照片</h2>
-        <div id="photoGrid"></div>
+        <div id="photoGrid" class="pgrid"></div>
     </div>
 </div>
 
@@ -528,7 +529,7 @@ input:focus{border-color:#ffb703;}
     <div class="mbox">
         <button class="close" onclick="closeOverlay('backpack')">✕</button>
         <h2>🎒 背包</h2>
-        <div style="font-size:13px;color:#7f9ab3;margin-bottom:8px;">到每座島找 <b>Lemon</b>（商人老鼠）可以把道具兌換成生日點數！</div>
+        <div style="font-size:13px;color:#7f9ab3;margin-bottom:8px;">到Rottnest Island找 <b>Lemon</b>（商人老鼠）可以把道具兌換成生日點數！</div>
         <div id="bagGrid" class="grid3"></div>
     </div>
 </div>
@@ -1902,8 +1903,8 @@ function completePhoto(dataUrl){
     P.photos.push({qid:q.id,title:q.t,url:dataUrl,date:todayStr()});
     P.stats.photos++;
     saveProfile();
-    addExp(10);
-    toast("📸 拍到了！+10 EXP");
+    addExp(15);
+    toast("📸 拍到了！+15 EXP");
     closeOverlay("photoMenu");
     openPhotoWall();
 }
