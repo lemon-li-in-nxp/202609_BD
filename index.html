@@ -890,7 +890,7 @@ const MAPS={
         chests:[{id:1,x:66.25,y:60.417},{id:2,x:33.75,y:89.583}],
         npcs:["lemon","yanp"]},
     map3:{name:"kalbarri",bg:"background/map3.png",start:{x:22,y:16},coll:MAP3_COLL,lv:20,
-        chests:[{id:1,x:12.5,y:88.34},{id:2,x:62.5,y:88.34},{id:3,x:12.5,y:69.17}],
+        chests:[{id:1,x:24.479167,y:88.34},{id:2,x:74.479167,y:88.34},{id:3,x:24.479167,y:69.17}],
         npcs:["stanly","jing","guo"]}
 };
 const COLL_FILES={map1:"background/json/map1-2.json",map2:"background/json/map2-2.json",map3:"background/json/map3.json"};
@@ -947,7 +947,7 @@ const NPCS={
         "新地圖上有其他NPC及寶物可以尋找，有不懂的可以再問我～哞～"]},
     samuel:{name:"Samuel",img:"NPC/llama.png",map:"map1",x:69.792,y:47.2,daily:true,dialog:[
         "嗯嗯，願主與你同在，你是來解每日任務的嗎？"]},
-    stanly:{name:"Stanly",img:"NPC/bull.png",map:"map3",x:87.5,y:71.67,dialog:[
+    stanly:{name:"Stanly",img:"NPC/bull.png",map:"map3",x:74.479167,y:71.67,dialog:[
         "今年總算要繳所得稅了，我好窮...",
         "欸是修哥！你要不要看我花好久時間寫出來的系統！",
         "什麼你不想看喔...",
@@ -1286,13 +1286,33 @@ function login(){
         toast("活動期間為 2026/09/20 - 10/03，目前無法登入");
         return;
     }
+    if(auth.currentUser){
+        enterGameFromUser(auth.currentUser);
+        return;
+    }
     const email=document.getElementById("username").value.trim();
     const pwd=document.getElementById("password").value;
     if(!email||!pwd){toast("請輸入信箱和密碼");return;}
     auth.signInWithEmailAndPassword(email,pwd).then(function(cred){
-        currentUser=cred.user.email;
-        return loadProfile(cred.user.uid);
-    }).then(function(d){
+        enterGameFromUser(cred.user);
+    }).catch(function(e){
+        console.error("login error",e);
+        toast(authMsg(e));
+    });
+}
+let _resuming=false;
+function enterGameFromUser(user){
+    if(_resuming)return;
+    _resuming=true;
+    const today=todayStr();
+    currentUser=user.email;
+    loadProfile(user.uid).then(function(d){
+        if(!d&&today>="2026-10-04"){
+            toast("旅程已結束，無法建立新角色");
+            currentUser=null;P=null;
+            showScreen("loginPage");
+            return;
+        }
         if(d){
             P=d;applyVisual();
             if(today>="2026-10-04"){
@@ -1305,15 +1325,15 @@ function login(){
                 drawCharacter("previewCanvas");
             }
         }else{
-            if(today>="2026-10-04"){
-                toast("旅程已結束，無法建立新角色");
-                return;
-            }
             showScreen("createPage");
         }
     }).catch(function(e){
-        console.error("login error",e);
+        console.error("continueSession error",e);
         toast(authMsg(e));
+        currentUser=null;P=null;
+        showScreen("loginPage");
+    }).finally(function(){
+        _resuming=false;
     });
 }
 function applyVisual(){
@@ -2480,6 +2500,12 @@ document.addEventListener("keydown",function(e){
 })();
 loadCollJson();
 [bodyFiles,hairFiles,clothesFiles,wingFiles].forEach(function(arr){arr.forEach(function(p){if(p){cachedImg(p);cachedImg(p.replace(/\.png$/,"-2.png"));}});});
+firebase.auth().onAuthStateChanged(function(user){
+    if(!user||P)return;
+    const today=todayStr();
+    if(today<"2026-09-20")return;
+    enterGameFromUser(user);
+});
 </script>
 </body>
 </html>
