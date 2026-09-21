@@ -1096,6 +1096,7 @@ function cachedImg(src){
     return _imgCache[src];
 }
 function drawCharacter(canvasId){
+    if(canvasId==="characterCanvas"||canvasId==="previewCanvas"){drawCreateCharacter(canvasId);return;}
     const canvas=document.getElementById(canvasId);
     if(!canvas)return;
     const ctx=canvas.getContext("2d");
@@ -1140,6 +1141,78 @@ function drawCharacter(canvasId){
         const nameEl=document.getElementById("playerNameGame");
         if(nameEl)nameEl.style.bottom=labelBottomPx(48,measureContentTop(canvas))+"px";
     }
+}
+const CREATE_ALIGN={scale:1,cx:32,base:63};
+const CREATE_GAME_OFFSET={
+    hair:   {"hair1-2.png":[2,-2],"hair2-2.png":[4,-3],"hair3-2.png":[3,-3],"hair4-2.png":[-6,-1],"hair5-2.png":[4,0]},
+    clothes:{"clothes1-2.png":[6,19],"clothes2-2.png":[3,19],"clothes3-2.png":[0,18],"clothes4-2.png":[7,21],"clothes5-2.png":[3,-16,"top"]},
+    wing:   {"wings1-2.png":[-18,-2],"wings2-2.png":[-12,2]}
+};
+function drawCreateCharacter(canvasId){
+    const canvas=document.getElementById(canvasId);
+    if(!canvas)return;
+    const ctx=canvas.getContext("2d");
+    const mask=(canvasId==="characterCanvas")?charSel:((P&&P.layers)||{body:true,hair:true,clothes:true,wings:true});
+    const small=function(p){return p.replace(/\.png$/,"-2.png");};
+    const body=cachedImg(small(bodyFiles[bodyIndex]));
+    const hair=cachedImg(small(hairFiles[hairIndex]));
+    const cloth=cachedImg(small(clothesFiles[clothesIndex]));
+    const wing=(mask.wings&&wingFiles[wingIndex])?cachedImg(small(wingFiles[wingIndex])):null;
+    const layers=[];
+    if(wing)layers.push(["wing",wing]);
+    if(mask.body)layers.push(["body",body]);
+    if(mask.clothes)layers.push(["cloth",cloth]);
+    if(mask.hair)layers.push(["hair",hair]);
+    let pending=false;
+    layers.forEach(function(item){
+        const im=item[1];
+        if(im._bad)return;
+        if(im.complete&&im.naturalWidth>0)return;
+        pending=true;
+        if(!im._watch){
+            im._watch=true;
+            im.onload=function(){im._bad=false;drawCharacter(canvasId);};
+            im.onerror=function(){
+                im._bad=true;
+                console.warn("創角小圖載入失敗: "+im.src);
+                drawCharacter(canvasId);
+            };
+        }
+    });
+    if(pending)return;
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.imageSmoothingEnabled=false;
+    const S=CREATE_ALIGN.scale,cx=CREATE_ALIGN.cx,base=CREATE_ALIGN.base;
+    let bx=cx,by=base;
+    layers.forEach(function(item){
+        if(item[0]!=="body")return;
+        const im=item[1];if(im._bad)return;
+        bx=cx-im.naturalWidth*S/2;by=base-im.naturalHeight*S;
+    });
+    const offGet=function(cat,key){
+        if(cat==="hair")return CREATE_GAME_OFFSET.hair[key];
+        if(cat==="cloth")return CREATE_GAME_OFFSET.clothes[key];
+        if(cat==="wing")return CREATE_GAME_OFFSET.wing[key];
+        return null;
+    };
+    const order=[];
+    layers.forEach(function(item){
+        const off=offGet(item[0],item[1].src.split("/").pop());
+        if(off&&off[2]==="top")return;
+        order.push(item);
+    });
+    layers.forEach(function(item){
+        const off=offGet(item[0],item[1].src.split("/").pop());
+        if(off&&off[2]==="top")order.push(item);
+    });
+    order.forEach(function(item){
+        const im=item[1];
+        if(im._bad||!(im.complete&&im.naturalWidth>0))return;
+        const off=offGet(item[0],im.src.split("/").pop());
+        const dx=off?(off[0]*S):0,dy=off?(off[1]*S):0;
+        const w=im.naturalWidth*S,h=im.naturalHeight*S;
+        ctx.drawImage(im,0,0,im.naturalWidth,im.naturalHeight,bx+dx,by+dy,w,h);
+    });
 }
 function updateCharacter(){
     drawCharacter("characterCanvas");
@@ -1300,9 +1373,7 @@ function deleteCharacter(){
     if(!u){currentUser=null;P=null;showScreen("loginPage");return;}
     db.collection("profiles").doc(u.uid).delete().then(function(){
         currentUser=null;P=null;
-        u.delete().catch(function(){
-            toast("角色已刪除；帳號保留（可聯絡主辦於後台移除）");
-        });
+        toast("角色已刪除，重新登入可再創建新角色");
         showScreen("loginPage");
     }).catch(function(e){
         console.error("deleteCharacter error",e);
@@ -2407,7 +2478,7 @@ document.addEventListener("keydown",function(e){
     window.addEventListener("orientationchange",function(){setTimeout(function(){if(currentUser)refreshView();},150);});
 })();
 loadCollJson();
-[bodyFiles,hairFiles,clothesFiles,wingFiles].forEach(function(arr){arr.forEach(function(p){if(p)cachedImg(p);});});
+[bodyFiles,hairFiles,clothesFiles,wingFiles].forEach(function(arr){arr.forEach(function(p){if(p){cachedImg(p);cachedImg(p.replace(/\.png$/,"-2.png"));}});});
 </script>
 </body>
 </html>
