@@ -1,0 +1,2271 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Pixel Perth Quest</title>
+
+<style>
+
+@font-face{
+
+    font-family:"Cubic11";
+
+    src:url(
+        "fonts/Cubic_11.ttf"
+    );
+
+}
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:"Cubic11","Microsoft JhengHei",sans-serif;
+
+    height:100vh;
+
+    background:
+    linear-gradient(
+        rgba(0,0,0,0.35),
+        rgba(0,0,0,0.5)
+    ),
+    url("perth.jpg");
+
+    background-size:cover;
+    background-position:center;
+}
+
+.screen{
+
+    min-height:100vh;
+
+    display:flex;
+    flex-direction:column;
+
+    padding:0;
+}
+
+.logo{
+
+    text-align:center;
+
+    margin-top:20px;
+}
+
+.logo h1{
+    color:white;
+    font-size:48px;
+    font-weight:900;
+}
+
+.logo p{
+
+    color:#ffd166;
+
+    margin-top:5px;
+}
+
+.hero{
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    margin:20px 0;
+}
+
+.panel{
+
+    width:100%;
+    max-width:500px;
+
+    margin:auto;
+
+    background:
+    rgba(255,255,255,.92);
+
+    border-radius:20px;
+
+    padding:24px;
+
+    backdrop-filter:blur(10px);
+
+    box-shadow:
+    0 10px 30px rgba(0,0,0,.25);
+}
+
+input{
+
+    width:100%;
+
+    padding:18px;
+
+    font-size:18px;
+
+    border:none;
+
+    border-radius:12px;
+
+    background:#eef4f8;
+
+    margin-bottom:10px;
+}
+
+.main-btn{
+
+    width:100%;
+
+    padding:18px;
+
+    font-size:20px;
+
+    border:none;
+
+    border-radius:12px;
+
+    background:#ffb703;
+
+    font-size:18px;
+
+    font-weight:bold;
+
+    margin-bottom:10px;
+
+    cursor:pointer;
+}
+
+.sub-btn{
+
+    width:100%;
+
+    padding:15px;
+
+    border:2px solid #457b9d;
+
+    border-radius:12px;
+
+    background:white;
+
+    color:#457b9d;
+
+    font-weight:bold;
+
+    cursor:pointer;
+}
+
+.footer{
+
+    text-align:center;
+
+    margin-top:12px;
+
+    color:#888;
+}
+
+#createPage{
+    display:none;
+}
+#createPage .logo{
+    margin-top:20px;
+}
+
+#createPage .panel{
+    margin-top:auto;
+}
+.selector{
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:space-between;
+
+    background:#eef4f8;
+
+    border-radius:16px;
+
+    padding:16px;
+
+    margin-bottom:12px;
+}
+
+.arrow{
+
+    width:60px;
+
+    text-align:center;
+
+    cursor:pointer;
+
+    font-weight:bold;
+
+    font-size:28px;
+}
+
+.value{
+
+    flex:1;
+
+    text-align:center;
+}
+
+.back-btn{
+
+    background:#ddd;
+}
+
+#characterCanvas{
+
+    width:150px;
+    height:150px;
+
+    image-rendering:pixelated;
+
+    background:
+    rgba(255,255,255,.15);
+
+    border-radius:20px;
+
+    padding:10px;
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- 登入頁 -->
+
+<div
+id="loginPage"
+class="screen">
+
+    <div class="logo">
+
+        <h1>PIXEL QUEST</h1>
+
+        <p>PERTH ADVENTURE</p>
+
+    </div>
+
+    <div style="flex:1;"></div>
+
+    <div class="panel">
+
+<input
+id="username"
+type="text"
+placeholder="帳號">
+
+<input
+id="password"
+type="password"
+placeholder="密碼">
+
+<button
+class="main-btn"
+onclick="login()">
+    登入
+</button>
+
+        <div class="footer">
+
+            Perth • Australia
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- 創角頁 -->
+
+<div
+id="createPage"
+class="screen">
+
+<div class="logo">
+
+    <h1>CREATE HERO</h1>
+
+    <p>建立你的冒險者</p>
+
+</div>
+
+    <div class="hero">
+
+        <canvas
+        id="characterCanvas"
+        width="64"
+        height="64">
+        </canvas>
+
+    </div>
+
+    <div class="panel">
+
+        <input
+id="characterName"
+type="text"
+placeholder="角色名稱">
+
+        <div class="selector">
+
+            <div
+            class="arrow"
+            onclick="changeBody(-1)">◀</div>
+
+            <div
+            class="value"
+            id="bodyText">
+
+                Body 1
+
+            </div>
+
+            <div
+            class="arrow"
+            onclick="changeBody(1)">▶</div>
+
+        </div>
+
+        <div class="selector">
+
+            <div
+            class="arrow"
+            onclick="changeHair(-1)">◀</div>
+
+            <div
+            class="value"
+            id="hairText">
+
+                Hair 1
+
+            </div>
+
+            <div
+            class="arrow"
+            onclick="changeHair(1)">▶</div>
+
+        </div>
+
+        <div class="selector">
+
+            <div
+            class="arrow"
+            onclick="changeClothes(-1)">◀</div>
+
+            <div
+            class="value"
+            id="clothesText">
+
+                Clothes 1
+
+            </div>
+
+            <div
+            class="arrow"
+            onclick="changeClothes(1)">▶</div>
+
+        </div>
+
+        <div class="selector">
+
+            <div
+            class="arrow"
+            onclick="changeWings(-1)">◀</div>
+
+            <div
+            class="value"
+            id="wingsText">
+
+                No wings
+
+            </div>
+
+            <div
+            class="arrow"
+            onclick="changeWings(1)">▶</div>
+
+        </div>
+
+<button
+class="main-btn"
+onclick="startAdventure()">
+
+    開始冒險
+
+</button>
+
+<button
+class="main-btn back-btn"
+onclick="backLogin()">
+
+    返回登入
+
+</button>
+
+</div>
+
+</div>
+<!-- 角色確認頁 -->
+<div
+id="characterPreviewPage"
+class="screen"
+style="display:none;">
+
+    <div class="logo">
+        <h1>角色確認</h1>
+    </div>
+
+    <div class="hero">
+
+        <canvas
+        id="previewCanvas"
+        width="64"
+        height="64"
+        style="
+        width:150px;
+        height:150px;
+        image-rendering:pixelated;">
+        </canvas>
+
+    </div>
+
+    <div class="panel">
+
+        <div
+        id="previewInfo"
+        style="
+        text-align:center;
+        font-size:20px;
+        font-weight:bold;
+        margin-bottom:20px;">
+        </div>
+
+        <button
+        class="main-btn"
+        onclick="showGamePage()">
+            確認角色
+        </button>
+
+        <button
+        class="main-btn back-btn"
+        onclick="deleteCharacter()">
+            刪除角色
+        </button>
+
+    </div>
+
+</div>
+<div
+id="gamePage"
+class="screen"
+style="display:none;">
+
+<div
+style="
+display:flex;
+justify-content:space-between;
+align-items:center;
+color:white;
+padding:10px 15px;">
+
+        <div
+        id="playerInfo"
+        style="
+        font-size:20px;
+        font-weight:bold;">
+            Player Lv1 0/10
+        </div>
+
+        <button
+        class="main-btn"
+        style="
+        width:90px;
+        margin:0;
+        padding:10px;">
+            MAP
+        </button>
+
+    </div>
+
+<div
+id="gameArea"
+onclick="movePlayer(event)"
+style="
+flex:1;
+position:relative;
+
+background-image:
+url('background/map1.png');
+
+background-repeat:no-repeat;
+
+background-position:center;
+
+background-size:cover;
+
+overflow:hidden;">
+<div
+id="collisionLayer"
+style="
+position:absolute;
+left:0;
+top:0;
+width:100%;
+height:100%;
+z-index:100;">
+</div>
+        <!-- NPC -->
+
+<div
+id="npc1"
+style="
+position:absolute;
+left:65%;
+top:65%;
+z-index:500;
+text-align:center;
+pointer-events:auto;">
+
+<div
+id="npcTalkIcon"
+onclick="
+event.stopPropagation();
+talkToNpc();
+"
+style="
+display:none;
+position:absolute;
+
+left:60px;
+top:5px;
+
+font-size:28px;
+z-index:9999;
+
+cursor:pointer;">
+💬
+</div>
+
+<div
+id="npcName"
+style="
+color:white;
+font-weight:bold;
+margin-bottom:-30px;">
+    N.K. Mou
+</div>
+
+    <canvas
+    id="npcCanvas"
+    width="64"
+    height="64"
+    style="
+    width:96px;
+    height:96px;
+    image-rendering:pixelated;">
+    </canvas>
+
+</div>
+
+        <!-- 玩家 -->
+
+<div
+id="playerCharacter"
+style="
+position:absolute;
+left:40%;
+top:80%;
+
+transform:
+translate(-50%,-50%);
+
+text-align:center;
+
+z-index:999;">
+
+            <div
+            id="playerNameGame"
+            style="
+            color:white;
+            font-weight:bold;
+margin-bottom:-10px;">
+                Player
+            </div>
+
+<canvas
+id="gameCanvas"
+width="64"
+height="64"
+style="
+width:96px;
+height:96px;
+image-rendering:pixelated;">
+</canvas>
+
+        </div>
+
+    </div>
+
+</div>
+<div
+id="welcomeDialog"
+style="
+display:none;
+
+position:fixed;
+
+left:50%;
+top:50%;
+
+transform:translate(-50%,-50%);
+
+width:420px;
+max-width:90vw;
+height:180px;
+
+z-index:10000;
+
+background-image:
+url('background/dialog.png');
+
+background-size:contain;
+background-position:center;
+background-repeat:no-repeat;">
+<div
+id="welcomeDialogText"
+style="
+position:absolute;
+
+left:25px;
+right:25px;
+
+top:25px;
+bottom:25px;
+
+display:flex;
+align-items:center;
+justify-content:center;
+
+color:white;
+
+font-family:'Cubic11';
+
+font-size:14px;
+
+text-align:center;
+
+line-height:1.5;
+
+word-break:break-word;
+">
+
+    </div>
+
+</div>
+<script>
+
+const bodyFiles = [
+"images/body/body1.png",
+"images/body/body2.png",
+"images/body/body3.png",
+"images/body/body4.png"
+];
+
+const hairFiles = [
+"images/hair/hair1.png",
+"images/hair/hair2.png",
+"images/hair/hair3.png",
+"images/hair/hair4.png",
+"images/hair/hair5.png"
+];
+
+const clothesFiles = [
+"images/clothes/clothes1.png",
+"images/clothes/clothes2.png",
+"images/clothes/clothes3.png",
+"images/clothes/clothes4.png",
+"images/clothes/clothes5.png"
+];
+
+const wingFiles = [
+null,
+"images/wings/wings1.png",
+"images/wings/wings2.png"
+];
+
+const npcImage =
+"NPC/cow.png";
+
+let bodyIndex=0;
+let hairIndex=0;
+let clothesIndex=0;
+let wingIndex=0;
+
+let currentUser = null;
+
+let currentFrame = 0;
+
+let direction = 40;
+
+/*
+38 = 上
+39 = 左
+40 = 下
+41 = 右
+*/
+
+let isMoving = false;
+let playerX = 40;
+let playerY = 80;
+
+let targetX = 40;
+let targetY = 80;
+
+const STAND_X = 0;
+const STAND_Y = 2;
+
+let editMode = false;
+
+let collisions = [
+    {
+        "x": 0,
+        "y": 0.19553029336666192,
+        "width": 28.46153846153846,
+        "height": 15.08379836835643
+    },
+    {
+        "x": 28.205128205128204,
+        "y": -0.1396652259301476,
+        "width": 30.76923076923077,
+        "height": 11.731843175388335
+    },
+    {
+        "x": 58.46153846153847,
+        "y": -0.1396652259301476,
+        "width": 14.102564102564102,
+        "height": 17.932960282379312
+    },
+    {
+        "x": 68.46153846153847,
+        "y": 0.3631280530150667,
+        "width": 11.794871794871794,
+        "height": 20.614524436753786
+    },
+    {
+        "x": 77.6923076923077,
+        "y": 0.19553029336666192,
+        "width": 22.05128205128205,
+        "height": 24.469272908667097
+    },
+    {
+        "x": 82.05128205128204,
+        "y": 24.32960768273695,
+        "width": 17.692307692307693,
+        "height": 3.5195529526165004
+    },
+    {
+        "x": 0.5128205128205128,
+        "y": 15.279328661723094,
+        "width": 17.435897435897434,
+        "height": 6.201117106990977
+    },
+    {
+        "x": 0,
+        "y": 21.81564128801088,
+        "width": 12.82051282051282,
+        "height": 14.581005089411217
+    },
+    {
+        "x": 0,
+        "y": 36.06145085812528,
+        "width": 8.461538461538462,
+        "height": 38.882680238429906
+    },
+    {
+        "x": 8.205128205128204,
+        "y": 63.54748344046367,
+        "width": 23.333333333333332,
+        "height": 10.726256617497906
+    },
+    {
+        "x": 7.948717948717948,
+        "y": 60.02793048784717,
+        "width": 19.743589743589745,
+        "height": 3.5195529526165004
+    },
+    {
+        "x": 8.461538461538462,
+        "y": 50.642455947536504,
+        "width": 8.974358974358974,
+        "height": 9.553072299959073
+    },
+    {
+        "x": 6.923076923076923,
+        "y": 45.11172987913915,
+        "width": 7.179487179487179,
+        "height": 6.201117106990977
+    },
+    {
+        "x": 0.5128205128205128,
+        "y": 18.46368609504278,
+        "width": 13.333333333333334,
+        "height": 5.195530549100548
+    },
+    {
+        "x": 0.2564102564102564,
+        "y": 74.10614229831317,
+        "width": 22.82051282051282,
+        "height": 3.6871507122649048
+    },
+    {
+        "x": 0.2564102564102564,
+        "y": 77.62569525092967,
+        "width": 18.205128205128204,
+        "height": 6.201117106990977
+    },
+    {
+        "x": 0,
+        "y": 83.99441011756905,
+        "width": 13.846153846153847,
+        "height": 3.351955192968096
+    },
+    {
+        "x": 0.5128205128205128,
+        "y": 87.68156082983396,
+        "width": 8.205128205128204,
+        "height": 12.067038694685143
+    },
+    {
+        "x": 7.435897435897436,
+        "y": 97.56982864908984,
+        "width": 6.41025641025641,
+        "height": 2.346368635077667
+    },
+    {
+        "x": 1.0256410256410255,
+        "y": 85.83798547370151,
+        "width": 8.974358974358974,
+        "height": 2.8491619140228814
+    },
+    {
+        "x": 87.43589743589743,
+        "y": 79.13407508776531,
+        "width": 12.051282051282051,
+        "height": 20.27932891745698
+    },
+    {
+        "x": 82.05128205128204,
+        "y": 84.99999667545947,
+        "width": 7.435897435897436,
+        "height": 14.581005089411217
+    },
+    {
+        "x": 77.6923076923077,
+        "y": 91.20111378245046,
+        "width": 5.384615384615385,
+        "height": 8.212290222771834
+    },
+    {
+        "x": 72.05128205128204,
+        "y": 94.38547121577014,
+        "width": 6.153846153846154,
+        "height": 5.363128308748953
+    },
+    {
+        "x": 86.66666666666667,
+        "y": 27.681562875705048,
+        "width": 11.538461538461538,
+        "height": 22.290502033237836
+    },
+    {
+        "x": 92.05128205128204,
+        "y": 49.97206490894288,
+        "width": 5.897435897435897,
+        "height": 29.664803457767647
+    },
+    {
+        "x": 94.87179487179486,
+        "y": 26.34078079851781,
+        "width": 4.615384615384616,
+        "height": 54.97206516467676
+    },
+    {
+        "x": 23.327636284238913,
+        "y": 62.02905669973254,
+        "width": 11.791991967857033,
+        "height": 14.080460181706458
+    }
+];
+
+let currentMap = "map1";
+let startX = 0;
+let startY = 0;
+
+let currentPreviewBox = null;
+
+let isDrawingCollision = false;
+
+/* ===== 新增開始 ===== */
+
+let dialogPage = 0;
+
+let welcomeMessages = [];
+let isDialogOpen = false;
+/* ===== 新增結束 ===== */
+
+function drawCharacter(canvasId){
+
+    const canvas =
+    document.getElementById(canvasId);
+
+    if(!canvas) return;
+
+    const ctx =
+    canvas.getContext("2d");
+
+    ctx.clearRect(
+        0,0,
+        canvas.width,
+        canvas.height
+    );
+
+    const body =
+    new Image();
+
+    const hair =
+    new Image();
+
+    const cloth =
+    new Image();
+
+    const wing =
+    new Image();
+
+    body.src =
+    bodyFiles[bodyIndex];
+
+    hair.src =
+    hairFiles[hairIndex];
+
+    cloth.src =
+    clothesFiles[clothesIndex];
+
+if(wingFiles[wingIndex]){
+    wing.src = wingFiles[wingIndex];
+}
+
+    Promise.all([
+
+        new Promise(r=>body.onload=r),
+        new Promise(r=>hair.onload=r),
+        new Promise(r=>cloth.onload=r),
+        new Promise(r=>{
+
+    if(wingFiles[wingIndex]){
+        wing.onload = r;
+    }
+    else{
+        r();
+    }
+
+})
+
+    ]).then(()=>{
+
+const size = 64;
+
+let frameX;
+let frameY;
+
+if(
+    canvasId === "gameCanvas"
+    &&
+    isMoving
+){
+
+    frameX =
+    currentFrame * 64;
+
+    frameY =
+    direction * 64;
+
+}
+else{
+
+    frameX =
+    STAND_X * 64;
+
+    frameY =
+    STAND_Y * 64;
+
+}
+
+if(wingFiles[wingIndex]){
+
+    ctx.drawImage(
+        wing,
+        frameX,frameY,size,size,
+        0,0,size,size
+    );
+
+}
+
+        ctx.drawImage(
+            body,
+            frameX,frameY,size,size,
+            0,0,size,size
+        );
+
+        ctx.drawImage(
+            cloth,
+            frameX,frameY,size,size,
+            0,0,size,size
+        );
+
+        ctx.drawImage(
+            hair,
+            frameX,frameY,size,size,
+            0,0,size,size
+        );
+
+    });
+
+}
+
+function drawNpc(){
+
+    const canvas =
+    document.getElementById(
+        "npcCanvas"
+    );
+
+    if(!canvas){
+        return;
+    }
+
+    const ctx =
+    canvas.getContext("2d");
+
+    const img =
+    new Image();
+
+    img.src = npcImage;
+
+    img.onload = function(){
+
+        ctx.clearRect(
+            0,
+            0,
+            64,
+            64
+        );
+
+        ctx.drawImage(
+
+            img,
+
+            128,
+            128,
+
+            128,
+            128,
+
+            0,
+            0,
+
+            64,
+            64
+
+        );
+
+    };
+
+}
+
+function updateCharacter(){
+
+    drawCharacter("characterCanvas");
+    drawCharacter("previewCanvas");
+    drawCharacter("gameCanvas");
+    checkNpcDistance();
+    drawNpc();
+
+}
+
+function changeBody(step){
+
+    bodyIndex += step;
+
+    if(bodyIndex < 0)
+        bodyIndex =
+        bodyFiles.length - 1;
+
+    if(bodyIndex >= bodyFiles.length)
+        bodyIndex = 0;
+
+    document.getElementById(
+    "bodyText"
+    ).innerText =
+    "Body " + (bodyIndex+1);
+
+    updateCharacter();
+}
+
+function changeHair(step){
+
+    hairIndex += step;
+
+    if(hairIndex < 0)
+        hairIndex =
+        hairFiles.length - 1;
+
+    if(hairIndex >= hairFiles.length)
+        hairIndex = 0;
+
+    document.getElementById(
+    "hairText"
+    ).innerText =
+    "Hair " + (hairIndex+1);
+
+    updateCharacter();
+}
+
+function changeClothes(step){
+
+    clothesIndex += step;
+
+    if(clothesIndex < 0)
+        clothesIndex =
+        clothesFiles.length - 1;
+
+    if(clothesIndex >= clothesFiles.length)
+        clothesIndex = 0;
+
+    document.getElementById(
+    "clothesText"
+    ).innerText =
+    "Clothes " + (clothesIndex+1);
+
+    updateCharacter();
+}
+
+function changeWings(step){
+
+    wingIndex += step;
+
+    if(wingIndex < 0)
+        wingIndex =
+        wingFiles.length - 1;
+
+    if(wingIndex >= wingFiles.length)
+        wingIndex = 0;
+
+if(wingIndex===0){
+
+    document.getElementById(
+    "wingsText"
+    ).innerText = "no wings";
+
+}
+else{
+
+    document.getElementById(
+    "wingsText"
+    ).innerText =
+    "wings " + wingIndex;
+
+}
+
+    updateCharacter();
+}
+
+function checkNpcDistance(){
+
+    const npcX = 65;
+    const npcY = 65;
+
+    const distance = Math.sqrt(
+        (playerX - npcX) ** 2 +
+        (playerY - npcY) ** 2
+    );
+
+    const icon =
+    document.getElementById(
+        "npcTalkIcon"
+    );
+
+    if(distance < 13){
+
+        icon.style.display =
+        "block";
+
+    }
+    else{
+
+        icon.style.display =
+        "none";
+
+    }
+
+}
+
+function showCreatePage(){
+
+    document.getElementById(
+    "loginPage").style.display="none";
+
+    document.getElementById(
+    "createPage").style.display="flex";
+
+    updateCharacter();
+}
+
+function talkToNpc(){
+
+    isMoving = false;
+
+    const npcX = 65;
+    const npcY = 65;
+
+    const dx = npcX - playerX;
+    const dy = npcY - playerY;
+
+    if(
+        Math.abs(dx) >
+        Math.abs(dy)
+    ){
+
+        if(dx > 0){
+            direction = 41;
+        }
+        else{
+            direction = 39;
+        }
+
+    }
+    else{
+
+        if(dy > 0){
+            direction = 40;
+        }
+        else{
+            direction = 38;
+        }
+
+    }
+
+    currentFrame = 0;
+
+    drawCharacter(
+        "gameCanvas"
+    );
+    welcomeMessages = [
+
+        "哞，我是 N.K. Mou。",
+
+        "你問我Yukon的test pattern？喔不是，你說教你如何得到生日點數？",
+
+        "點數主要可以透過「拍照任務」及「每日任務」來累積。",
+
+        "「拍照任務」可以去上方的城鎮接取，「每日任務」則是去左邊的教堂接取。",
+
+        "畫面右上角的map可以帶你去其他小島，等級到達後才會解鎖，島上會有寶箱等著你。",
+
+        "聽懂了就開始行動吧，哞～",
+    ];
+
+    showWelcomeDialog();
+
+}
+
+function showWelcomeDialog(){
+
+    dialogPage = 0;
+
+    const dialog =
+    document.getElementById(
+        "welcomeDialog"
+    );
+
+    const text =
+    document.getElementById(
+        "welcomeDialogText"
+    );
+
+    text.innerHTML =
+    welcomeMessages[0];
+isDialogOpen = true;
+    dialog.style.display =
+    "block";
+
+    dialog.onclick =
+    function(){
+
+        dialogPage++;
+
+if(
+    dialogPage >=
+    welcomeMessages.length
+){
+
+    isDialogOpen = false;
+
+    dialog.style.display =
+    "none";
+
+    return;
+}
+
+        text.innerHTML =
+        welcomeMessages[
+            dialogPage
+        ];
+
+    };
+
+}
+
+function backLogin(){
+
+    document.getElementById(
+    "createPage").style.display="none";
+
+    document.getElementById(
+    "gamePage").style.display="none";
+
+    document.getElementById(
+    "loginPage").style.display="flex";
+}
+function showCharacterPreview(){
+
+    const data =
+    JSON.parse(
+        localStorage.getItem(
+            currentUser + "_character"
+        )
+    );
+
+    if(!data){
+        return;
+    }
+
+    bodyIndex = data.body;
+    hairIndex = data.hair;
+    clothesIndex = data.clothes;
+    wingIndex = data.wings;
+
+    document.getElementById(
+        "loginPage"
+    ).style.display = "none";
+
+    document.getElementById(
+        "createPage"
+    ).style.display = "none";
+
+    document.getElementById(
+        "gamePage"
+    ).style.display = "none";
+
+    document.getElementById(
+        "characterPreviewPage"
+    ).style.display = "flex";
+
+    document.getElementById(
+        "previewInfo"
+    ).innerHTML =
+    `
+    ${data.name}<br>
+    Lv.${data.level}<br>
+    EXP ${data.exp}/10
+    `;
+
+    updateCharacter();
+
+}
+
+function showGamePage(){
+
+    const data =
+    JSON.parse(
+        localStorage.getItem(
+            currentUser + "_character"
+        )
+    );
+
+if(!data){
+    return;
+}
+
+welcomeMessages = [
+    `啊！${data.name}，歡迎你來到 Perth！`,
+    "這是可以累積生日點數的小鎮，去跟旁邊的N.K. Mou說說話吧，他會帶你介紹這個地方。"
+];
+
+bodyIndex = data.body;
+hairIndex = data.hair;
+clothesIndex = data.clothes;
+wingIndex = data.wings;
+
+    document.getElementById(
+        "loginPage"
+    ).style.display = "none";
+
+    document.getElementById(
+        "createPage"
+    ).style.display = "none";
+
+    document.getElementById(
+        "characterPreviewPage"
+    ).style.display = "none";
+
+    document.getElementById(
+        "gamePage"
+    ).style.display = "flex";
+
+    document.getElementById(
+        "playerInfo"
+    ).innerText =
+    `${data.name} Lv${data.level} ${data.exp}/10`;
+document.getElementById(
+    "playerNameGame"
+).innerText =
+data.name;
+playerX = 60;
+playerY = 80;
+
+targetX = 40;
+targetY = 80;
+
+document.getElementById(
+    "playerCharacter"
+).style.left =
+playerX + "%";
+
+document.getElementById(
+    "playerCharacter"
+).style.top =
+playerY + "%";
+    updateCharacter();
+
+loadCollisionData(
+    collisions
+);
+
+document.getElementById(
+    "collisionLayer"
+).style.display = "none";
+
+editMode = false;
+
+const welcomeKey =
+currentUser +
+"_welcomeShown_" +
+data.name;
+
+if(
+    !localStorage.getItem(
+        welcomeKey
+    )
+){
+    showWelcomeDialog();
+
+    localStorage.setItem(
+        welcomeKey,
+        "true"
+    );
+}
+}
+function login(){
+
+    const username =
+    document.getElementById(
+        "username"
+    ).value;
+
+    const password =
+    document.getElementById(
+        "password"
+    ).value;
+
+    if(
+        username !== "test" ||
+        password !== "test"
+    ){
+        alert("帳號或密碼錯誤");
+        return;
+    }
+
+    currentUser = username;
+
+    const characterData =
+    localStorage.getItem(
+        currentUser + "_character"
+    );
+
+if(characterData){
+
+    showCharacterPreview();
+
+}
+    else{
+
+        alert(
+            "尚未建立角色，請先建立角色"
+        );
+
+        showCreatePage();
+
+    }
+
+}
+
+function isBlocked(
+    x,
+    y
+){
+
+    for(
+        const collision
+        of collisions
+    ){
+
+        if(
+
+            x >= collision.x
+
+            &&
+
+            x <=
+            collision.x +
+            collision.width
+
+            &&
+
+            y >= collision.y
+
+            &&
+
+            y <=
+            collision.y +
+            collision.height
+
+        ){
+
+            return true;
+
+        }
+
+    }
+
+    return false;
+
+}
+
+function movePlayer(event){
+
+    if(editMode){
+        return;
+    }
+
+    if(isDialogOpen){
+        return;
+    }
+
+    const area =
+    document.getElementById(
+        "gameArea"
+    );
+
+    const rect =
+    area.getBoundingClientRect();
+
+    targetX =
+    (
+        (event.clientX - rect.left)
+        / rect.width
+    ) * 100;
+
+    targetY =
+    (
+        (event.clientY - rect.top)
+        / rect.height
+    ) * 100;
+
+    if(targetX < 5){
+        targetX = 5;
+    }
+
+    if(targetX > 90){
+        targetX = 90;
+    }
+
+    if(targetY < 10){
+        targetY = 10;
+    }
+
+    if(targetY > 85){
+        targetY = 85;
+    }
+
+    isMoving = true;
+
+}
+
+function createCollisionBox(
+    collision
+){
+
+    const layer =
+    document.getElementById(
+        "collisionLayer"
+    );
+
+    const box =
+    document.createElement(
+        "div"
+    );
+
+    box.style.position =
+    "absolute";
+
+    box.style.left =
+    collision.x + "%";
+
+    box.style.top =
+    collision.y + "%";
+
+    box.style.width =
+    collision.width + "%";
+
+    box.style.height =
+    collision.height + "%";
+
+    box.style.background =
+    "rgba(255,0,0,0.3)";
+
+    box.style.border =
+    "2px solid red";
+
+    const deleteBtn =
+    document.createElement(
+        "div"
+    );
+
+    deleteBtn.innerText =
+    "✕";
+
+    deleteBtn.style.position =
+    "absolute";
+
+    deleteBtn.style.right =
+    "-10px";
+
+    deleteBtn.style.top =
+    "-10px";
+
+    deleteBtn.style.width =
+    "20px";
+
+    deleteBtn.style.height =
+    "20px";
+
+    deleteBtn.style.background =
+    "#ff0000";
+
+    deleteBtn.style.color =
+    "white";
+
+    deleteBtn.style.borderRadius =
+    "50%";
+
+    deleteBtn.style.display =
+    "flex";
+
+    deleteBtn.style.alignItems =
+    "center";
+
+    deleteBtn.style.justifyContent =
+    "center";
+
+    deleteBtn.style.cursor =
+    "pointer";
+
+    deleteBtn.style.fontWeight =
+    "bold";
+
+    deleteBtn.style.fontSize =
+    "12px";
+
+    deleteBtn.style.zIndex =
+    "9999";
+
+    deleteBtn.addEventListener(
+        "click",
+        function(e){
+
+            e.stopPropagation();
+
+            const index =
+            collisions.indexOf(
+                collision
+            );
+
+            if(index > -1){
+
+                collisions.splice(
+                    index,
+                    1
+                );
+
+            }
+
+            box.remove();
+
+            console.log(
+                collisions
+            );
+
+        }
+    );
+
+    box.appendChild(
+        deleteBtn
+    );
+
+    layer.appendChild(
+        box
+    );
+
+}
+
+function loadCollisionData(
+    data
+){
+
+    collisions = [];
+
+    document.getElementById(
+        "collisionLayer"
+    ).innerHTML = "";
+
+    data.forEach(function(collision){
+
+        collisions.push(
+            collision
+        );
+
+        createCollisionBox(
+            collision
+        );
+
+    });
+
+}
+
+function deleteCharacter(){
+
+    const result =
+    confirm(
+        "確認刪除角色？"
+    );
+
+    if(!result){
+        return;
+    }
+const data =
+JSON.parse(
+    localStorage.getItem(
+        currentUser + "_character"
+    )
+);
+
+if(data){
+
+    localStorage.removeItem(
+        currentUser +
+        "_welcomeShown_" +
+        data.name
+    );
+
+}
+
+localStorage.removeItem(
+    currentUser + "_character"
+);
+
+
+    alert(
+        "角色已刪除"
+    );
+
+    document.getElementById(
+        "characterPreviewPage"
+    ).style.display = "none";
+
+    document.getElementById(
+        "loginPage"
+    ).style.display = "flex";
+
+}
+
+function startAdventure(){
+
+    const saveData = {
+
+        name:
+        document.getElementById(
+        "characterName"
+        ).value || "Player",
+
+        body: bodyIndex,
+        hair: hairIndex,
+        clothes: clothesIndex,
+        wings: wingIndex,
+
+        level: 1,
+        exp: 0,
+
+        currentMap:
+        "Perth Downtown"
+
+    };
+
+localStorage.setItem(
+    currentUser + "_character",
+    JSON.stringify(saveData)
+);
+
+alert(
+    "角色已儲存！"
+);
+
+showCharacterPreview();
+
+}
+window.onload = function(){
+
+    document.addEventListener(
+        "keydown",
+        function(e){
+
+            if(e.key === "F2"){
+
+                editMode = !editMode;
+
+                isMoving = false;
+
+                document
+                .getElementById(
+                    "collisionLayer"
+                )
+                .style.display =
+                editMode
+                ? "block"
+                : "none";
+
+                alert(
+                    "碰撞編輯模式：" +
+                    (
+                        editMode
+                        ? "ON"
+                        : "OFF"
+                    )
+                );
+
+            }
+
+            if(e.key === "F3"){
+
+                const json =
+                JSON.stringify(
+                    collisions,
+                    null,
+                    4
+                );
+
+                const blob =
+                new Blob(
+                    [json],
+                    {
+                        type:
+                        "application/json"
+                    }
+                );
+
+                const url =
+                URL.createObjectURL(
+                    blob
+                );
+
+                const a =
+                document.createElement(
+                    "a"
+                );
+
+                a.href = url;
+
+                a.download =
+                currentMap + ".json";
+
+                a.click();
+
+                URL.revokeObjectURL(
+                    url
+                );
+
+            }
+        }
+    );
+
+    const gameArea =
+    document.getElementById(
+        "gameArea"
+    );
+
+gameArea.addEventListener(
+    "mousedown",
+    function(e){
+
+if(!editMode){
+    return;
+}
+
+if(e.button !== 0){
+    return;
+}
+
+        const rect =
+        gameArea.getBoundingClientRect();
+
+        startX =
+        e.clientX - rect.left;
+
+        startY =
+        e.clientY - rect.top;
+
+        isDrawingCollision =
+        true;
+
+currentPreviewBox =
+document.createElement(
+    "div"
+);
+
+currentPreviewBox.style.position =
+"absolute";
+
+currentPreviewBox.style.border =
+"2px dashed yellow";
+
+currentPreviewBox.style.background =
+"rgba(255,255,0,0.2)";
+
+document
+.getElementById(
+    "collisionLayer"
+)
+.appendChild(
+    currentPreviewBox
+);
+        console.log(
+            "開始框選",
+            startX,
+            startY
+        );
+
+    }
+);
+
+gameArea.addEventListener(
+    "mousemove",
+    function(e){
+
+        if(
+            !editMode ||
+            !isDrawingCollision ||
+            !currentPreviewBox
+        ){
+            return;
+        }
+
+        const rect =
+        gameArea.getBoundingClientRect();
+
+        const currentX =
+        e.clientX - rect.left;
+
+        const currentY =
+        e.clientY - rect.top;
+
+        currentPreviewBox.style.left =
+        Math.min(
+            startX,
+            currentX
+        ) + "px";
+
+        currentPreviewBox.style.top =
+        Math.min(
+            startY,
+            currentY
+        ) + "px";
+
+        currentPreviewBox.style.width =
+        Math.abs(
+            currentX-startX
+        ) + "px";
+
+        currentPreviewBox.style.height =
+        Math.abs(
+            currentY-startY
+        ) + "px";
+
+    }
+);
+
+gameArea.addEventListener(
+    "mouseup",
+    function(e){
+
+        if(
+            !editMode ||
+            !isDrawingCollision
+        ){
+            return;
+        }
+
+        const rect =
+        gameArea.getBoundingClientRect();
+
+        const endX =
+        e.clientX - rect.left;
+
+        const endY =
+        e.clientY - rect.top;
+const boxWidth =
+Math.abs(
+    endX - startX
+);
+
+const boxHeight =
+Math.abs(
+    endY - startY
+);
+
+if(
+    boxWidth < 10 ||
+    boxHeight < 10
+){
+
+    if(currentPreviewBox){
+
+        currentPreviewBox.remove();
+        currentPreviewBox = null;
+
+    }
+
+    isDrawingCollision = false;
+
+    return;
+
+}
+const collision = {
+
+    x:
+    (
+        Math.min(
+            startX,
+            endX
+        )
+        / rect.width
+    ) * 100,
+
+    y:
+    (
+        Math.min(
+            startY,
+            endY
+        )
+        / rect.height
+    ) * 100,
+
+    width:
+    (
+        Math.abs(
+            endX-startX
+        )
+        / rect.width
+    ) * 100,
+
+    height:
+    (
+        Math.abs(
+            endY-startY
+        )
+        / rect.height
+    ) * 100
+
+};
+
+
+collisions.push(
+    collision
+);
+
+if(currentPreviewBox){
+
+    currentPreviewBox.remove();
+
+    currentPreviewBox = null;
+
+}
+
+createCollisionBox(
+    collision
+);
+
+isDrawingCollision =
+false;
+
+        console.log(
+            collisions
+        );
+
+    }
+);
+    setInterval(()=>{
+
+        if(isMoving){
+
+            const dx =
+            targetX - playerX;
+
+            const dy =
+            targetY - playerY;
+
+            const distance =
+            Math.sqrt(
+                dx*dx +
+                dy*dy
+            );
+
+if(distance < 1){
+
+    isMoving = false;
+
+    currentFrame = 0;
+
+    direction = 40;
+
+    drawCharacter(
+        "gameCanvas"
+    );
+
+}
+            else{
+
+const nextX =
+playerX +
+(dx * 0.08);
+
+const nextY =
+playerY +
+(dy * 0.08);
+
+if(
+    !isBlocked(
+        nextX,
+        nextY
+    )
+){
+
+    playerX =
+    nextX;
+
+    playerY =
+    nextY;
+
+}
+else{
+
+    isMoving = false;
+
+}
+
+                if(
+                    Math.abs(dx)
+                    >
+                    Math.abs(dy)
+                ){
+
+                    if(dx > 0){
+
+                        direction = 41;
+
+                    }else{
+
+                        direction = 39;
+
+                    }
+
+                }
+                else{
+
+                    if(dy > 0){
+
+                        direction = 40;
+
+                    }else{
+
+                        direction = 38;
+
+                    }
+
+                }
+
+                currentFrame++;
+
+                if(currentFrame > 7){
+
+                    currentFrame = 0;
+
+                }
+
+            }
+
+            document.getElementById(
+                "playerCharacter"
+            ).style.left =
+            playerX + "%";
+
+            document.getElementById(
+                "playerCharacter"
+            ).style.top =
+            playerY + "%";
+
+            drawCharacter(
+                "gameCanvas"
+            );
+checkNpcDistance();
+        }
+
+    },100);
+
+    updateCharacter();
+
+};
+
+</script>
+
+</body>
+</html>

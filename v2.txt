@@ -1,0 +1,1198 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Pixel Perth Quest</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:"Microsoft JhengHei",sans-serif;
+
+    height:100vh;
+
+    background:
+    linear-gradient(
+        rgba(0,0,0,0.35),
+        rgba(0,0,0,0.5)
+    ),
+    url("perth.jpg");
+
+    background-size:cover;
+    background-position:center;
+}
+
+.screen{
+
+    min-height:100vh;
+
+    display:flex;
+    flex-direction:column;
+
+    padding:20px;
+}
+
+.logo{
+
+    text-align:center;
+
+    margin-top:20px;
+}
+
+.logo h1{
+    color:white;
+    font-size:48px;
+    font-weight:900;
+}
+
+.logo p{
+
+    color:#ffd166;
+
+    margin-top:5px;
+}
+
+.hero{
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    margin:20px 0;
+}
+
+.panel{
+
+    width:100%;
+    max-width:500px;
+
+    margin:auto;
+
+    background:
+    rgba(255,255,255,.92);
+
+    border-radius:20px;
+
+    padding:24px;
+
+    backdrop-filter:blur(10px);
+
+    box-shadow:
+    0 10px 30px rgba(0,0,0,.25);
+}
+
+input{
+
+    width:100%;
+
+    padding:18px;
+
+    font-size:18px;
+
+    border:none;
+
+    border-radius:12px;
+
+    background:#eef4f8;
+
+    margin-bottom:10px;
+}
+
+.main-btn{
+
+    width:100%;
+
+    padding:18px;
+
+    font-size:20px;
+
+    border:none;
+
+    border-radius:12px;
+
+    background:#ffb703;
+
+    font-size:18px;
+
+    font-weight:bold;
+
+    margin-bottom:10px;
+
+    cursor:pointer;
+}
+
+.sub-btn{
+
+    width:100%;
+
+    padding:15px;
+
+    border:2px solid #457b9d;
+
+    border-radius:12px;
+
+    background:white;
+
+    color:#457b9d;
+
+    font-weight:bold;
+
+    cursor:pointer;
+}
+
+.footer{
+
+    text-align:center;
+
+    margin-top:12px;
+
+    color:#888;
+}
+
+#createPage{
+    display:none;
+}
+#createPage .logo{
+    margin-top:20px;
+}
+
+#createPage .panel{
+    margin-top:auto;
+}
+.selector{
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:space-between;
+
+    background:#eef4f8;
+
+    border-radius:16px;
+
+    padding:16px;
+
+    margin-bottom:12px;
+}
+
+.arrow{
+
+    width:60px;
+
+    text-align:center;
+
+    cursor:pointer;
+
+    font-weight:bold;
+
+    font-size:28px;
+}
+
+.value{
+
+    flex:1;
+
+    text-align:center;
+}
+
+.back-btn{
+
+    background:#ddd;
+}
+
+#characterCanvas{
+
+    width:150px;
+    height:150px;
+
+    image-rendering:pixelated;
+
+    background:
+    rgba(255,255,255,.15);
+
+    border-radius:20px;
+
+    padding:10px;
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- 登入頁 -->
+
+<div
+id="loginPage"
+class="screen">
+
+    <div class="logo">
+
+        <h1>PIXEL QUEST</h1>
+
+        <p>PERTH ADVENTURE</p>
+
+    </div>
+
+    <div style="flex:1;"></div>
+
+    <div class="panel">
+
+<input
+id="username"
+type="text"
+placeholder="帳號">
+
+<input
+id="password"
+type="password"
+placeholder="密碼">
+
+<button
+class="main-btn"
+onclick="login()">
+    登入
+</button>
+
+        <div class="footer">
+
+            Perth • Australia
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- 創角頁 -->
+
+<div
+id="createPage"
+class="screen">
+
+<div class="logo">
+
+    <h1>CREATE HERO</h1>
+
+    <p>建立你的冒險者</p>
+
+</div>
+
+    <div class="hero">
+
+        <canvas
+        id="characterCanvas"
+        width="64"
+        height="64">
+        </canvas>
+
+    </div>
+
+    <div class="panel">
+
+        <input
+id="characterName"
+type="text"
+placeholder="角色名稱">
+
+        <div class="selector">
+
+            <div
+            class="arrow"
+            onclick="changeBody(-1)">◀</div>
+
+            <div
+            class="value"
+            id="bodyText">
+
+                Body 1
+
+            </div>
+
+            <div
+            class="arrow"
+            onclick="changeBody(1)">▶</div>
+
+        </div>
+
+        <div class="selector">
+
+            <div
+            class="arrow"
+            onclick="changeHair(-1)">◀</div>
+
+            <div
+            class="value"
+            id="hairText">
+
+                Hair 1
+
+            </div>
+
+            <div
+            class="arrow"
+            onclick="changeHair(1)">▶</div>
+
+        </div>
+
+        <div class="selector">
+
+            <div
+            class="arrow"
+            onclick="changeClothes(-1)">◀</div>
+
+            <div
+            class="value"
+            id="clothesText">
+
+                Clothes 1
+
+            </div>
+
+            <div
+            class="arrow"
+            onclick="changeClothes(1)">▶</div>
+
+        </div>
+
+        <div class="selector">
+
+            <div
+            class="arrow"
+            onclick="changeWings(-1)">◀</div>
+
+            <div
+            class="value"
+            id="wingsText">
+
+                No wings
+
+            </div>
+
+            <div
+            class="arrow"
+            onclick="changeWings(1)">▶</div>
+
+        </div>
+
+<button
+class="main-btn"
+onclick="startAdventure()">
+
+    開始冒險
+
+</button>
+
+<button
+class="main-btn back-btn"
+onclick="backLogin()">
+
+    返回登入
+
+</button>
+
+</div>
+
+</div>
+<!-- 角色確認頁 -->
+<div
+id="characterPreviewPage"
+class="screen"
+style="display:none;">
+
+    <div class="logo">
+        <h1>角色確認</h1>
+    </div>
+
+    <div class="hero">
+
+        <canvas
+        id="previewCanvas"
+        width="64"
+        height="64"
+        style="
+        width:150px;
+        height:150px;
+        image-rendering:pixelated;">
+        </canvas>
+
+    </div>
+
+    <div class="panel">
+
+        <div
+        id="previewInfo"
+        style="
+        text-align:center;
+        font-size:20px;
+        font-weight:bold;
+        margin-bottom:20px;">
+        </div>
+
+        <button
+        class="main-btn"
+        onclick="showGamePage()">
+            確認角色
+        </button>
+
+        <button
+        class="main-btn back-btn"
+        onclick="deleteCharacter()">
+            刪除角色
+        </button>
+
+    </div>
+
+</div>
+<div
+id="gamePage"
+class="screen"
+style="display:none;">
+
+    <div
+    style="
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    color:white;
+    margin-bottom:15px;">
+
+        <div
+        id="playerInfo"
+        style="
+        font-size:20px;
+        font-weight:bold;">
+            Player Lv1 0/10
+        </div>
+
+        <button
+        class="main-btn"
+        style="
+        width:90px;
+        margin:0;
+        padding:10px;">
+            MAP
+        </button>
+
+    </div>
+
+<div
+id="gameArea"
+onclick="movePlayer(event)"
+style="
+flex:1;
+position:relative;
+background:rgba(255,255,255,.15);
+border-radius:20px;
+overflow:hidden;">
+
+        <!-- NPC -->
+
+        <div
+        id="npc1"
+        style="
+        position:absolute;
+        top:120px;
+        right:40px;
+        color:white;
+        text-align:center;
+        font-weight:bold;">
+
+            ❗<br>
+            遊客中心
+
+        </div>
+
+        <!-- 玩家 -->
+
+<div
+id="playerCharacter"
+style="
+position:absolute;
+left:40%;
+top:80%;
+text-align:center;">
+
+            <div
+            id="playerNameGame"
+            style="
+            color:white;
+            font-weight:bold;">
+                Player
+            </div>
+
+            <canvas
+            id="gameCanvas"
+            width="64"
+            height="64">
+            </canvas>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+const bodyFiles = [
+"images/body/body1.png",
+"images/body/body2.png",
+"images/body/body3.png",
+"images/body/body4.png"
+];
+
+const hairFiles = [
+"images/hair/hair1.png",
+"images/hair/hair2.png",
+"images/hair/hair3.png",
+"images/hair/hair4.png",
+"images/hair/hair5.png"
+];
+
+const clothesFiles = [
+"images/clothes/clothes1.png",
+"images/clothes/clothes2.png",
+"images/clothes/clothes3.png",
+"images/clothes/clothes4.png",
+"images/clothes/clothes5.png"
+];
+
+const wingFiles = [
+null,
+"images/wings/wings1.png",
+"images/wings/wings2.png"
+];
+
+let bodyIndex=0;
+let hairIndex=0;
+let clothesIndex=0;
+let wingIndex=0;
+
+let currentUser = null;
+
+let currentFrame = 0;
+
+let direction = 40;
+
+/*
+38 = 上
+39 = 左
+40 = 下
+41 = 右
+*/
+
+let isMoving = false;
+let playerX = 40;
+let playerY = 80;
+
+let targetX = 40;
+let targetY = 80;
+function drawCharacter(canvasId){
+
+    const canvas =
+    document.getElementById(canvasId);
+
+    if(!canvas) return;
+
+    const ctx =
+    canvas.getContext("2d");
+
+    ctx.clearRect(
+        0,0,
+        canvas.width,
+        canvas.height
+    );
+
+    const body =
+    new Image();
+
+    const hair =
+    new Image();
+
+    const cloth =
+    new Image();
+
+    const wing =
+    new Image();
+
+    body.src =
+    bodyFiles[bodyIndex];
+
+    hair.src =
+    hairFiles[hairIndex];
+
+    cloth.src =
+    clothesFiles[clothesIndex];
+
+if(wingFiles[wingIndex]){
+    wing.src = wingFiles[wingIndex];
+}
+
+    Promise.all([
+
+        new Promise(r=>body.onload=r),
+        new Promise(r=>hair.onload=r),
+        new Promise(r=>cloth.onload=r),
+        new Promise(r=>{
+
+    if(wingFiles[wingIndex]){
+        wing.onload = r;
+    }
+    else{
+        r();
+    }
+
+})
+
+    ]).then(()=>{
+
+const size = 64;
+
+let frameX;
+let frameY;
+
+if(
+    canvasId === "gameCanvas"
+    &&
+    isMoving
+){
+
+    frameX =
+    currentFrame * 64;
+
+}
+else{
+
+    frameX = 0;
+
+}
+
+if(canvasId === "gameCanvas"){
+
+    frameY =
+    direction * 64;
+
+}
+else{
+
+    frameY =
+    40 * 64;
+
+}
+
+if(wingFiles[wingIndex]){
+
+    ctx.drawImage(
+        wing,
+        frameX,frameY,size,size,
+        0,0,size,size
+    );
+
+}
+
+        ctx.drawImage(
+            body,
+            frameX,frameY,size,size,
+            0,0,size,size
+        );
+
+        ctx.drawImage(
+            cloth,
+            frameX,frameY,size,size,
+            0,0,size,size
+        );
+
+        ctx.drawImage(
+            hair,
+            frameX,frameY,size,size,
+            0,0,size,size
+        );
+
+    });
+
+}
+
+function updateCharacter(){
+
+    drawCharacter("characterCanvas");
+    drawCharacter("previewCanvas");
+    drawCharacter("gameCanvas");
+
+}
+
+function changeBody(step){
+
+    bodyIndex += step;
+
+    if(bodyIndex < 0)
+        bodyIndex =
+        bodyFiles.length - 1;
+
+    if(bodyIndex >= bodyFiles.length)
+        bodyIndex = 0;
+
+    document.getElementById(
+    "bodyText"
+    ).innerText =
+    "Body " + (bodyIndex+1);
+
+    updateCharacter();
+}
+
+function changeHair(step){
+
+    hairIndex += step;
+
+    if(hairIndex < 0)
+        hairIndex =
+        hairFiles.length - 1;
+
+    if(hairIndex >= hairFiles.length)
+        hairIndex = 0;
+
+    document.getElementById(
+    "hairText"
+    ).innerText =
+    "Hair " + (hairIndex+1);
+
+    updateCharacter();
+}
+
+function changeClothes(step){
+
+    clothesIndex += step;
+
+    if(clothesIndex < 0)
+        clothesIndex =
+        clothesFiles.length - 1;
+
+    if(clothesIndex >= clothesFiles.length)
+        clothesIndex = 0;
+
+    document.getElementById(
+    "clothesText"
+    ).innerText =
+    "Clothes " + (clothesIndex+1);
+
+    updateCharacter();
+}
+
+function changeWings(step){
+
+    wingIndex += step;
+
+    if(wingIndex < 0)
+        wingIndex =
+        wingFiles.length - 1;
+
+    if(wingIndex >= wingFiles.length)
+        wingIndex = 0;
+
+if(wingIndex===0){
+
+    document.getElementById(
+    "wingsText"
+    ).innerText = "no wings";
+
+}
+else{
+
+    document.getElementById(
+    "wingsText"
+    ).innerText =
+    "wings " + wingIndex;
+
+}
+
+    updateCharacter();
+}
+
+function showCreatePage(){
+
+    document.getElementById(
+    "loginPage").style.display="none";
+
+    document.getElementById(
+    "createPage").style.display="flex";
+
+    updateCharacter();
+}
+
+function backLogin(){
+
+    document.getElementById(
+    "createPage").style.display="none";
+
+    document.getElementById(
+    "gamePage").style.display="none";
+
+    document.getElementById(
+    "loginPage").style.display="flex";
+}
+function showCharacterPreview(){
+
+    const data =
+    JSON.parse(
+        localStorage.getItem(
+            currentUser + "_character"
+        )
+    );
+
+    if(!data){
+        return;
+    }
+
+    bodyIndex = data.body;
+    hairIndex = data.hair;
+    clothesIndex = data.clothes;
+    wingIndex = data.wings;
+
+    document.getElementById(
+        "loginPage"
+    ).style.display = "none";
+
+    document.getElementById(
+        "createPage"
+    ).style.display = "none";
+
+    document.getElementById(
+        "gamePage"
+    ).style.display = "none";
+
+    document.getElementById(
+        "characterPreviewPage"
+    ).style.display = "flex";
+
+    document.getElementById(
+        "previewInfo"
+    ).innerHTML =
+    `
+    ${data.name}<br>
+    Lv.${data.level}<br>
+    EXP ${data.exp}/10
+    `;
+
+    updateCharacter();
+
+}
+
+function showGamePage(){
+
+    const data =
+    JSON.parse(
+        localStorage.getItem(
+            currentUser + "_character"
+        )
+    );
+
+    if(!data){
+        return;
+    }
+
+    bodyIndex = data.body;
+    hairIndex = data.hair;
+    clothesIndex = data.clothes;
+    wingIndex = data.wings;
+
+    document.getElementById(
+        "loginPage"
+    ).style.display = "none";
+
+    document.getElementById(
+        "createPage"
+    ).style.display = "none";
+
+    document.getElementById(
+        "characterPreviewPage"
+    ).style.display = "none";
+
+    document.getElementById(
+        "gamePage"
+    ).style.display = "flex";
+
+    document.getElementById(
+        "playerInfo"
+    ).innerText =
+    `${data.name} Lv${data.level} ${data.exp}/10`;
+document.getElementById(
+    "playerNameGame"
+).innerText =
+data.name;
+playerX = 40;
+playerY = 80;
+
+targetX = 40;
+targetY = 80;
+
+document.getElementById(
+    "playerCharacter"
+).style.left =
+playerX + "%";
+
+document.getElementById(
+    "playerCharacter"
+).style.top =
+playerY + "%";
+    updateCharacter();
+
+}
+function login(){
+
+    const username =
+    document.getElementById(
+        "username"
+    ).value;
+
+    const password =
+    document.getElementById(
+        "password"
+    ).value;
+
+    if(
+        username !== "test" ||
+        password !== "test"
+    ){
+        alert("帳號或密碼錯誤");
+        return;
+    }
+
+    currentUser = username;
+
+    const characterData =
+    localStorage.getItem(
+        currentUser + "_character"
+    );
+
+if(characterData){
+
+    showCharacterPreview();
+
+}
+    else{
+
+        alert(
+            "尚未建立角色，請先建立角色"
+        );
+
+        showCreatePage();
+
+    }
+
+}
+function movePlayer(event){
+
+    const area =
+    document.getElementById(
+        "gameArea"
+    );
+
+    const rect =
+    area.getBoundingClientRect();
+
+    targetX =
+    (
+        (event.clientX - rect.left)
+        / rect.width
+    ) * 100;
+
+    targetY =
+    (
+        (event.clientY - rect.top)
+        / rect.height
+    ) * 100;
+
+    if(targetX < 5){
+        targetX = 5;
+    }
+
+    if(targetX > 90){
+        targetX = 90;
+    }
+
+    if(targetY < 10){
+        targetY = 10;
+    }
+
+    if(targetY > 85){
+        targetY = 85;
+    }
+
+    isMoving = true;
+
+}
+function deleteCharacter(){
+
+    const result =
+    confirm(
+        "確認刪除角色？"
+    );
+
+    if(!result){
+        return;
+    }
+
+    localStorage.removeItem(
+        currentUser + "_character"
+    );
+
+    alert(
+        "角色已刪除"
+    );
+
+    document.getElementById(
+        "characterPreviewPage"
+    ).style.display = "none";
+
+    document.getElementById(
+        "loginPage"
+    ).style.display = "flex";
+
+}
+
+function startAdventure(){
+
+    const saveData = {
+
+        name:
+        document.getElementById(
+        "characterName"
+        ).value || "Player",
+
+        body: bodyIndex,
+        hair: hairIndex,
+        clothes: clothesIndex,
+        wings: wingIndex,
+
+        level: 1,
+        exp: 0,
+
+        currentMap:
+        "Perth Downtown"
+
+    };
+
+localStorage.setItem(
+    currentUser + "_character",
+    JSON.stringify(saveData)
+);
+
+alert(
+    "角色已儲存！"
+);
+
+showCharacterPreview();
+
+}
+window.onload = function(){
+
+    setInterval(()=>{
+
+        if(isMoving){
+
+            const dx =
+            targetX - playerX;
+
+            const dy =
+            targetY - playerY;
+
+            const distance =
+            Math.sqrt(
+                dx*dx +
+                dy*dy
+            );
+
+            if(distance < 1){
+
+                isMoving = false;
+
+                currentFrame = 0;
+
+            }
+            else{
+
+                playerX +=
+                dx * 0.08;
+
+                playerY +=
+                dy * 0.08;
+
+                if(
+                    Math.abs(dx)
+                    >
+                    Math.abs(dy)
+                ){
+
+                    if(dx > 0){
+
+                        direction = 41;
+
+                    }else{
+
+                        direction = 39;
+
+                    }
+
+                }
+                else{
+
+                    if(dy > 0){
+
+                        direction = 40;
+
+                    }else{
+
+                        direction = 38;
+
+                    }
+
+                }
+
+                currentFrame++;
+
+                if(currentFrame > 7){
+
+                    currentFrame = 0;
+
+                }
+
+            }
+
+            document.getElementById(
+                "playerCharacter"
+            ).style.left =
+            playerX + "%";
+
+            document.getElementById(
+                "playerCharacter"
+            ).style.top =
+            playerY + "%";
+
+            drawCharacter(
+                "gameCanvas"
+            );
+
+        }
+
+    },100);
+
+    updateCharacter();
+
+};
+
+</script>
+
+</body>
+</html>

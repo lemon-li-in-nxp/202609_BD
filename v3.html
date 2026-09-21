@@ -1,0 +1,2139 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Pixel Perth Quest</title>
+<style>
+@font-face{font-family:"Cubic11";src:url("fonts/Cubic_11.ttf");}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;}
+body{
+    font-family:"Cubic11","Microsoft JhengHei",sans-serif;
+    background:#0a2a4a;
+    color:#fff;
+    user-select:none;-webkit-user-select:none;
+    touch-action:manipulation;
+}
+img,canvas{image-rendering:pixelated;}
+
+/* ===== 登入/創角共用 ===== */
+.screen{
+    min-height:100vh;min-height:100dvh;
+    position:absolute;inset:0;
+    display:flex;flex-direction:column;
+    padding:18px 18px 34px;
+    background:linear-gradient(rgba(6,20,38,.55),rgba(6,20,38,.75)),url("perth.jpg");
+    background-size:cover;background-position:center;
+}
+.logo{text-align:center;margin:14px 0 6px;}
+.logo h1{
+    color:#fff;font-size:44px;font-weight:900;
+    text-shadow:3px 3px 0 #1b4f8f,6px 6px 0 rgba(0,0,0,.35);
+    letter-spacing:2px;
+}
+.logo p{
+    color:#ffd166;margin-top:4px;font-size:16px;
+    text-shadow:2px 2px 0 rgba(0,0,0,.6);
+}
+.panel-wrap{flex:1;display:flex;align-items:center;justify-content:center;}
+.panel{
+    width:100%;max-width:430px;
+    background:rgba(240,250,255,.96);
+    color:#204060;
+    border:4px solid #1b4f8f;
+    border-radius:14px;
+    padding:20px;
+    box-shadow:0 6px 0 0 #0d2a4a,0 14px 30px rgba(0,0,0,.4);
+}
+input[type=text],input[type=password],input[type=number]{
+    width:100%;padding:15px 14px;
+    font-family:inherit;font-size:17px;
+    border:3px solid #84a7c9;border-radius:10px;
+    background:#eef6fd;color:#1c3550;
+    margin-bottom:12px;outline:none;
+}
+input:focus{border-color:#ffb703;}
+.btn{
+    width:100%;padding:15px;
+    font-family:inherit;font-size:18px;font-weight:bold;
+    border-radius:10px;border:3px solid #000;
+    margin-bottom:12px;cursor:pointer;text-align:center;
+    box-shadow:0 4px 0 0 rgba(0,0,0,.35);
+}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 0 rgba(0,0,0,.35);}
+.btn-main{background:#ffb703;color:#4a2e00;}
+.btn-pixel{background:#3f8f5f;color:#fff;}
+.btn-blue{background:#457b9d;color:#fff;}
+.btn-gray{background:#c9d4de;color:#33506b;}
+.btn-sm{width:auto;padding:9px 14px;font-size:14px;margin:0;}
+.footer{text-align:center;margin-top:12px;color:#7f9ab3;font-size:14px;}
+
+.selector{
+    display:flex;align-items:center;justify-content:space-between;
+    background:#eef6fd;border:3px solid #84a7c9;border-radius:10px;
+    padding:8px 6px;margin-bottom:12px;
+}
+.arrow{width:54px;text-align:center;cursor:pointer;font-size:28px;color:#1b4f8f;font-weight:900;}
+.value{flex:1;text-align:center;font-size:16px;color:#204060;white-space:nowrap;}
+.canvas-box{
+    display:flex;justify-content:center;margin:10px 0 14px;
+}
+.canvas-box canvas{
+    width:150px;height:150px;image-rendering:pixelated;
+    background:rgba(255,255,255,.15);
+    border:4px solid rgba(255,255,255,.35);
+    border-radius:14px;
+}
+.createList{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;}
+.createRow{
+    display:flex;align-items:center;gap:8px;
+    background:#eef6fd;border:3px solid #84a7c9;border-radius:10px;
+    padding:7px 10px;cursor:pointer;user-select:none;
+}
+.createRow.sel{border-color:#ffb703;background:#fff7e0;}
+.createLabel{
+    flex:0 0 auto;color:#1b4f8f;font-weight:900;font-size:13px;
+    background:#d5e6f5;border:2px solid #84a7c9;border-radius:8px;
+    padding:4px 6px;min-width:82px;text-align:center;white-space:nowrap;
+}
+.createArw{width:32px;text-align:center;cursor:pointer;font-size:22px;color:#1b4f8f;font-weight:900;flex:none;}
+.createArw.ghost{color:#c2d5e6;cursor:default;}
+.createVal{flex:1;text-align:center;font-size:16px;color:#204060;white-space:nowrap;}
+.createVal.na{color:#9db6cc;}
+
+/* ===== 遊戲頁 ===== */
+#gamePage{
+    position:absolute;inset:0;
+    display:none;flex-direction:column;
+    background:#0a2a4a;
+}
+#hud{
+    padding:10px 12px 8px;
+    background:linear-gradient(#123a5f,#0c2c4c);
+    border-bottom:4px solid #1b4f8f;
+    color:#fff;
+}
+#hudRow1{display:flex;justify-content:space-between;align-items:center;}
+#plrName{font-size:19px;font-weight:900;text-shadow:2px 2px 0 #000;}
+#plrBadges{display:flex;align-items:center;gap:6px;}
+.badge{
+    font-size:13px;background:#1b4f8f;border:2px solid #5f93c8;
+    padding:3px 8px;border-radius:8px;font-weight:bold;
+}
+#expBar{
+    margin:6px 0;height:15px;background:#0a1c30;
+    border:2px solid #5f93c8;border-radius:8px;overflow:hidden;position:relative;
+}
+#expFill{
+    height:100%;width:0%;
+    background:linear-gradient(90deg,#6fdc6f,#3fbf6f);
+    transition:width .3s;
+}
+#hudBtns{display:flex;gap:8px;margin-top:6px;}
+.hudBtn{
+    flex:1;text-align:center;
+    background:#14508f;color:#fff;font-size:15px;font-weight:900;
+    border:3px solid #000;border-radius:10px;
+    padding:8px 0;cursor:pointer;
+    box-shadow:0 4px 0 0 rgba(0,0,0,.35);
+    letter-spacing:1px;
+}
+.hudBtn:active{transform:translateY(3px);box-shadow:0 1px 0 0 rgba(0,0,0,.35);}
+.hudBtn .ic{font-size:20px;display:block;}
+
+#gameStage{
+    flex:1;position:relative;display:flex;align-items:center;justify-content:center;
+    overflow:hidden;background:#0a2a4a;
+}
+#gameArea{
+    position:relative;overflow:hidden;width:100%;height:100%;
+    background:#0a2a4a;background-size:cover;background-position:center;
+}
+#collisionLayer{position:absolute;left:0;top:0;width:100%;height:100%;z-index:100;display:none;pointer-events:none;}
+
+.mapObj{position:absolute;transform:translate(-50%,-100%);display:flex;flex-direction:column;align-items:center;text-align:center;cursor:default;z-index:500;pointer-events:none;}
+.npcInfo{position:absolute;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;text-align:center;white-space:nowrap;pointer-events:none;}
+.mapObj .objName{
+    font-size:12px;color:#fff;background:rgba(0,0,0,.6);
+    padding:1px 6px;border-radius:6px;display:inline-block;margin-top:2px;
+    white-space:nowrap;pointer-events:none;
+}
+.mapObj img{width:48px;height:48px;pointer-events:none;}
+.mapObj img.chestImg{width:16px;height:16px;object-fit:contain;}
+.npcCanv{width:96px;height:96px;image-rendering:pixelated;pointer-events:none;}
+.npcCanv.npcSmall{width:48px;height:48px;}
+.npcCanv.npcThird{width:32px;height:32px;}
+#zoneBtn{
+    position:absolute;transform:translateX(-50%);z-index:1200;
+    background:#2a6f3b;color:#fff;font-weight:900;font-size:15px;
+    border:3px solid #000;border-radius:12px;padding:9px 16px;
+    box-shadow:0 4px 0 rgba(0,0,0,.4);letter-spacing:1px;cursor:pointer;
+    white-space:nowrap;
+}
+#zoneBtn:active{transform:translateX(-50%) translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.4);}
+.talkIcon{
+    font-size:17px;filter:drop-shadow(0 0 2px #000);pointer-events:none;
+    line-height:1;
+}
+.dq{border:2px solid #cfe0f0;border-radius:10px;padding:8px 10px;background:#f5faff;}
+.dqInput{
+    width:100%;box-sizing:border-box;margin-top:6px;padding:8px;font-size:16px;
+    border:2px solid #b7d0e8;border-radius:8px;background:#fff;
+}
+.dqOpt{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap;}
+.dqOpt .opt{border:2px solid #b7d0e8;background:#fff;color:#1d3557;border-radius:8px;padding:7px 10px;font-size:13px;font-weight:700;cursor:pointer;}
+.dqOpt .opt.sel{border-color:#2a6f3b;background:#d6f0dd;color:#1d4d2e;}
+#photoSub{
+    position:fixed;inset:0;z-index:5500;
+    background:rgba(5,15,30,.72);
+    display:none;align-items:center;justify-content:center;
+}
+#photoSub.show{display:flex;}
+.photoSubBtn{
+    display:block;width:220px;margin:6px auto;text-align:center;
+    background:#fff;color:#204060;font-size:16px;font-weight:900;
+    border:3px solid #1b4f8f;border-radius:12px;padding:12px 0;cursor:pointer;
+}
+.photoSubBtn.cam{background:#2e9b4f;color:#fff;border-color:#1b6b3a;}
+.photoSubBtn.up{background:#457b9d;color:#fff;border-color:#2c5a73;}
+.photoSubBtn.cancel{background:#e04444;color:#fff;border-color:#a02020;}
+#levelUpOverlay{
+    position:fixed;inset:0;z-index:8000;
+    display:none;align-items:center;justify-content:center;
+    background:rgba(0,0,0,.5);
+}
+#levelUpOverlay.show{display:flex;}
+.levelUpBox{
+    text-align:center;
+    animation:levelUpPulse 2.5s ease-out forwards;
+}
+.levelUpTitle{
+    font-size:52px;font-weight:900;color:#ffd166;
+    text-shadow:0 0 20px #ffa500,0 0 40px #ff8c00,3px 3px 0 #000;
+}
+.levelUpLv{
+    font-size:28px;font-weight:900;color:#fff;margin-top:8px;
+    text-shadow:2px 2px 0 #000;
+}
+@keyframes levelUpPulse{
+    0%{transform:scale(.3);opacity:0}
+    15%{transform:scale(1.2);opacity:1}
+    30%{transform:scale(1)}
+    75%{transform:scale(1);opacity:1}
+    100%{transform:scale(1.1);opacity:0}
+}
+.levelUpParticles{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
+.levelUpParticles span{
+    position:absolute;width:6px;height:6px;border-radius:50%;
+    animation:levelUpSpark 2s ease-out forwards;
+}
+@keyframes levelUpSpark{
+    0%{opacity:1;transform:translate(0,0) scale(1)}
+    100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(0)}
+}
+
+#playerCharacter{
+    position:absolute;transform:translate(-50%,-100%);
+    display:flex;flex-direction:column;align-items:center;
+    text-align:center;z-index:999;pointer-events:none;
+}
+#playerNameGame{
+    position:absolute;left:50%;transform:translateX(-50%);bottom:48px;
+    color:#fff;font-weight:bold;font-size:13px;
+    background:rgba(0,0,0,.45);padding:0 6px;border-radius:6px;display:inline-block;
+    white-space:nowrap;pointer-events:none;
+}
+#playerCharacter canvas{width:48px;height:48px;image-rendering:pixelated;}
+
+.actionBubble{
+    position:absolute;transform:translate(-50%,-210%);
+    background:#ffd166;color:#5a3b00;
+    font-size:15px;font-weight:900;
+    padding:4px 10px;border-radius:10px;border:3px solid #000;
+    display:none;z-index:3000;white-space:nowrap;
+    box-shadow:0 4px 0 0 rgba(0,0,0,.4);
+}
+#floatDialog{
+    position:absolute;transform:translate(-50%,-110%);z-index:2600;
+    width:max-content;max-width:72%;min-width:180px;
+    background:#fff;border:4px solid #1b4f8f;border-radius:12px;
+    color:#204060;padding:10px 12px;
+    box-shadow:0 6px 16px rgba(0,0,0,.45);
+}
+#floatDialog:before{
+    content:"";position:absolute;left:50%;bottom:-14px;transform:translateX(-50%);
+    border:8px solid transparent;border-top-color:#1b4f8f;
+}
+#floatDlgName{font-weight:900;color:#005f73;margin-bottom:4px;}
+#floatDlgText{font-size:14px;line-height:1.55;}
+#floatDlgBtn{
+    margin-top:8px;width:100%;background:#ffb703;color:#4a2e00;
+    font-weight:900;border:3px solid #000;border-radius:8px;
+    padding:7px 0;font-family:inherit;cursor:pointer;
+}
+
+/* ===== 彈窗 ===== */
+.overlay{
+    position:fixed;inset:0;z-index:5000;
+    background:rgba(5,15,30,.72);
+    display:none;align-items:center;justify-content:center;
+    padding:14px;
+}
+.overlay.show{display:flex;}
+.mbox{
+    width:100%;max-width:480px;max-height:88vh;overflow-y:auto;
+    background:linear-gradient(#f6fbfe,#dcebf6);
+    color:#204060;
+    border:5px solid #1b4f8f;border-radius:14px;
+    box-shadow:0 6px 0 0 #0d2a4a,0 16px 34px rgba(0,0,0,.5);
+    padding:16px;
+    overscroll-behavior:contain;
+}
+.mbox h2{
+    font-size:20px;text-align:center;color:#1b4f8f;
+    margin-bottom:10px;
+    text-shadow:1px 1px 0 #fff;
+}
+.mbox .close{
+    float:right;background:#e04444;color:#fff;border:3px solid #000;
+    border-radius:8px;padding:4px 10px;font-weight:900;cursor:pointer;
+    box-shadow:0 3px 0 0 rgba(0,0,0,.35);
+}
+
+/* 拍照任務 */
+.questHead{
+    display:flex;gap:8px;margin-bottom:12px;
+    flex-wrap:wrap;
+}
+.qrow{
+    display:flex;align-items:center;gap:8px;
+    background:#fff;border:3px solid #84a7c9;border-radius:10px;
+    padding:8px 10px;margin-bottom:8px;
+}
+.qrow .qtitle{flex:1;font-size:15px;font-weight:bold;line-height:1.35;}
+.qrow .qdone{color:#2e9b4f;font-size:20px;}
+.qrow .qbtn{background:#ffb703;color:#4a2e00;font-weight:900;border:3px solid #000;border-radius:8px;padding:5px 10px;font-size:14px;cursor:pointer;box-shadow:0 3px 0 0 rgba(0,0,0,.3);white-space:nowrap;}
+.locTag{font-size:12px;background:#457b9d;color:#fff;border-radius:6px;padding:1px 6px;display:inline-block;margin-left:4px;}
+
+/* 背包 */
+.grid3{display:flex;flex-wrap:wrap;gap:10px;}
+.slot{
+    width:calc(33.333% - 8px);
+    background:#fff;border:3px solid #84a7c9;border-radius:10px;
+    text-align:center;padding:8px 4px;
+}
+.slot img{width:44px;height:44px;}
+.slot .sn{font-size:13px;font-weight:bold;color:#204060;}
+.slot .sv{font-size:12px;color:#b6781a;}
+.slot .sq{font-size:12px;color:#8aa4bd;}
+
+/* 地圖選單 */
+.island{
+    display:flex;align-items:center;gap:10px;
+    background:#fff;border:3px solid #84a7c9;border-radius:10px;
+    padding:10px;margin-bottom:10px;cursor:pointer;
+}
+.island .thumb{width:46px;height:46px;border:2px solid #1b4f8f;border-radius:6px;background-size:cover;background-position:center;flex:none;}
+.island .iname{font-size:17px;font-weight:900;color:#005f73;}
+.island .idesc{font-size:12px;color:#7f9ab3;}
+.island .go{background:#2e9b4f;color:#fff;font-size:14px;font-weight:900;border:3px solid #000;border-radius:8px;padding:6px 10px;box-shadow:0 3px 0 0 rgba(0,0,0,.3);margin-left:auto;}
+
+.dlg-line{font-size:16px;line-height:1.6;min-height:70px;color:#2a4358;margin:6px 0;}
+.sqlabel{font-size:15px;font-weight:bold;margin:10px 0 4px;color:#1b4f8f;}
+.sinput{display:flex;gap:8px;align-items:center;}
+.opt{
+    flex:1;text-align:center;padding:12px;border-radius:10px;border:3px solid #000;
+    font-family:inherit;font-size:15px;font-weight:900;cursor:pointer;
+    box-shadow:0 4px 0 0 rgba(0,0,0,.3);
+}
+.opt:active{transform:translateY(3px);box-shadow:0 1px 0 0 rgba(0,0,0,.3);}
+.optA{background:#2e9b4f;color:#fff;}
+.optB{background:#e04444;color:#fff;}
+.triviaQ{font-size:17px;font-weight:900;line-height:1.5;margin-bottom:12px;}
+.topt{display:block;width:100%;text-align:left;background:#fff;border:3px solid #84a7c9;border-radius:10px;padding:12px;font-family:inherit;font-size:16px;margin-bottom:8px;cursor:pointer;color:#204060;font-weight:bold;}
+.topt.correct{background:#9ee3a0;}
+.topt.wrong{background:#f2a0a0;}
+.girlCards{display:flex;gap:8px;margin:12px 0 4px;flex-wrap:wrap;justify-content:center;}
+.girlCard{border:3px solid #1b4f8f;background:#fff;color:#204060;border-radius:10px;padding:8px 14px;font-size:15px;font-weight:900;cursor:pointer;box-shadow:0 3px 0 rgba(0,0,0,.25);}
+.girlCard.off{opacity:.35;cursor:default;box-shadow:none;}
+.girlCard:active:not(.off){transform:translateY(2px);box-shadow:0 1px 0 rgba(0,0,0,.25);}
+
+/* 照片牆 */
+.pgrid{display:flex;flex-wrap:wrap;gap:8px;}
+.pcell{width:calc(33.333% - 6px);position:relative;}
+.pcell img{width:100%;height:auto;border:3px solid #1b4f8f;border-radius:8px;display:block;}
+.pcell .ptag{position:absolute;left:4px;bottom:4px;background:rgba(0,0,0,.65);color:#fff;font-size:10px;border-radius:4px;padding:0 4px;max-width:96%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
+.pview{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:6000;display:none;align-items:center;justify-content:center;flex-direction:column;padding:16px;}
+.pview img{max-width:100%;max-height:72vh;border:4px solid #1b4f8f;border-radius:10px;}
+.pview .pt{color:#ffd166;font-size:16px;margin-top:10px;text-align:center;}
+.pview .pdate{color:#8aa4bd;font-size:13px;margin-top:4px;}
+
+#toast{
+    position:fixed;left:50%;bottom:110px;transform:translateX(-50%);
+    background:#0d2a4a;color:#ffd166;font-size:16px;font-weight:900;
+    border:3px solid #000;border-radius:10px;padding:10px 18px;
+    display:none;z-index:7000;text-align:center;max-width:88vw;
+    box-shadow:0 6px 0 0 rgba(0,0,0,.4);
+}
+</style>
+</head>
+<body>
+
+<!-- 登入頁 -->
+<div id="loginPage" class="screen">
+    <div class="logo">
+        <h1>BIRTHDAY POINT GAME</h1>
+        <p>PERTH ADVENTURE 2026</p>
+    </div>
+    <div class="panel-wrap">
+        <div class="panel">
+            <input id="username" type="text" placeholder="帳號">
+            <input id="password" type="password" placeholder="密碼">
+            <button class="btn btn-main" onclick="login()">登　入</button>
+            <div class="footer">Perth • 2026/09/23 - 10/03</div>
+        </div>
+    </div>
+</div>
+
+<!-- 創角頁 -->
+<div id="createPage" class="screen" style="display:none">
+    <div class="logo">
+        <h1>CREATE HERO</h1>
+        <p>建立你的冒險者</p>
+    </div>
+    <div class="canvas-box"><canvas id="characterCanvas" width="64" height="64"></canvas></div>
+    <div class="panel-wrap">
+        <div class="panel">
+            <input id="characterName" type="text" placeholder="角色名稱">
+            <div class="createList" id="createList"></div>
+            <button class="btn btn-main" onclick="startAdventure()">開始冒險</button>
+            <button class="btn btn-gray" onclick="backLogin()">返回登入</button>
+        </div>
+    </div>
+</div>
+
+<!-- 角色確認頁 -->
+<div id="characterPreviewPage" class="screen" style="display:none">
+    <div class="logo"><h1>角色確認</h1></div>
+    <div class="canvas-box"><canvas id="previewCanvas" width="64" height="64"></canvas></div>
+    <div class="panel-wrap">
+        <div class="panel">
+            <div id="previewInfo" style="text-align:center;font-size:19px;font-weight:bold;margin-bottom:16px;line-height:1.6;"></div>
+            <button class="btn btn-main" onclick="showGamePage()">確認角色</button>
+            <button class="btn btn-gray" onclick="deleteCharacter()">刪除角色</button>
+        </div>
+    </div>
+</div>
+
+<!-- 遊戲頁 -->
+<div id="gamePage">
+    <div id="hud">
+        <div id="hudRow1">
+            <div id="plrName">Player</div>
+            <div id="plrBadges">
+                <div class="badge" id="plrLv">Lv1</div>
+                <div class="badge" id="plrPoints">✨0</div>
+            </div>
+        </div>
+        <div id="expBar"><div id="expFill"></div></div>
+        <div id="hudBtns">
+            <div class="hudBtn" onclick="openBackpack()"><span class="ic">🎒</span>背包</div>
+            <div class="hudBtn" onclick="openMapMenu()"><span class="ic">🗺️</span>MAP</div>
+            <div class="hudBtn" onclick="openSettlement()"><span class="ic">🏆</span>旅程</div>
+        </div>
+    </div>
+    <div id="gameStage">
+    <div id="gameArea">
+        <div id="collisionLayer"></div>
+        <div id="objLayer"></div>
+        <div id="playerCharacter">
+            <div id="playerNameGame"></div>
+            <canvas id="gameCanvas" width="64" height="64"></canvas>
+        </div>
+        <div id="actionBubble" class="actionBubble"></div>
+        <div id="floatDialog" style="display:none">
+            <div id="floatDlgName">NPC</div>
+            <div id="floatDlgText"></div>
+            <button id="floatDlgBtn" onclick="floatDlgNext()">繼續 ▸</button>
+        </div>
+        <div id="zoneBtn" class="zoneBtn" style="display:none" onclick="zoneBtnClick(event)"></div>
+    </div>
+    </div>
+</div>
+
+<!-- 對話框 -->
+<div id="dialogBox" class="overlay">
+    <div class="mbox">
+        <div id="dlgName" style="font-size:17px;font-weight:900;color:#005f73;">NPC</div>
+        <div class="dlg-line" id="dlgText"></div>
+        <button class="btn btn-main" onclick="dialogNext()" id="dlgBtn">繼續 ▸</button>
+        <div id="dlgChoice" style="display:none;gap:10px;margin-top:8px"></div>
+    </div>
+</div>
+
+<!-- 拍照任務 -->
+<div id="photoMenu" class="overlay">
+    <div class="mbox">
+        <button class="close" onclick="closeOverlay('photoMenu')">✕</button>
+        <h2>📷 拍照任務</h2>
+        <div class="questHead">
+            <button class="btn btn-pixel btn-sm" onclick="openPhotoWall()">照片牆</button>
+            <div class="badge" id="photoCount" style="margin-left:auto;font-size:13px;background:#457b9d;color:#fff;border:2px solid #5f93c8;border-radius:8px;padding:4px 10px;">已完成 0/45</div>
+        </div>
+        <div style="font-size:13px;color:#7f9ab3;margin-bottom:8px;">每張照片 +10 EXP。拍到/上傳「任何」照片就算完成！</div>
+        <div id="questList"></div>
+    </div>
+</div>
+
+<!-- 照片牆 -->
+<div id="photoWall" class="overlay">
+    <div class="mbox">
+        <button class="close" onclick="closeOverlay('photoWall')">✕</button>
+        <h2>🖼️ 我的照片</h2>
+        <div id="photoGrid"></div>
+    </div>
+</div>
+
+<!-- 照片查看 -->
+<div id="photoView" class="pview" onclick="this.style.display='none'">
+    <img id="pvImg" src="" alt="">
+    <div class="pt" id="pvTitle"></div>
+    <div class="pdate" id="pvDate"></div>
+</div>
+
+<!-- 背包 -->
+<div id="backpack" class="overlay">
+    <div class="mbox">
+        <button class="close" onclick="closeOverlay('backpack')">✕</button>
+        <h2>🎒 背包</h2>
+        <div style="font-size:13px;color:#7f9ab3;margin-bottom:8px;">到每座島找 <b>Lemon</b>（商人老鼠）可以把道具兌換成生日點數！</div>
+        <div id="bagGrid" class="grid3"></div>
+    </div>
+</div>
+
+<!-- MAP -->
+<div id="mapMenu" class="overlay">
+    <div class="mbox">
+        <button class="close" onclick="closeOverlay('mapMenu')">✕</button>
+        <h2>🗺️ 島嶼地圖</h2>
+        <div style="font-size:13px;color:#7f9ab3;margin-bottom:10px;">點擊島嶼即可前往（測試版無等級限制）</div>
+        <div id="islandList"></div>
+    </div>
+</div>
+
+<!-- 每日任務 -->
+<div id="dailyBox" class="overlay">
+    <div class="mbox">
+        <button class="close" onclick="closeOverlay('dailyBox')">✕</button>
+        <h2>📖 每日任務</h2>
+        <div style="font-size:14px;color:#204060;margin-bottom:8px;">Samuel 教堂的每日任務·<span id="dailyDate"></span></div>
+        <div id="dailyBody"></div>
+    </div>
+</div>
+
+<!-- 冷知識 -->
+<div id="triviaBox" class="overlay">
+    <div class="mbox">
+        <button class="close" onclick="closeOverlay('triviaBox')">✕</button>
+        <h2>🧠 澳洲冷知識</h2>
+        <div id="triviaBody"></div>
+    </div>
+</div>
+
+<!-- 猜謎塔詢問 -->
+<div id="triviaPrompt" class="overlay">
+    <div class="mbox" style="text-align:center">
+        <h2>🗼 冷知識猜謎塔</h2>
+        <div style="font-size:15px;color:#204060;padding:6px 0 14px;">要不要挑戰今天的澳洲冷知識？</div>
+        <div style="display:flex;gap:10px;justify-content:center">
+            <button class="btn btn-main" onclick="confirmTrivia(true)">是</button>
+            <button class="btn btn-pixel" onclick="confirmTrivia(false)">先等等</button>
+        </div>
+    </div>
+</div>
+
+<!-- 女友大哉問 -->
+<div id="girlBox" class="overlay">
+    <div class="mbox">
+        <button class="close" onclick="closeGirlQuiz()">✕</button>
+        <h2>💘 神秘老伯 · 女友大哉問</h2>
+        <div id="girlBody"></div>
+    </div>
+</div>
+
+<!-- Call Out 視窗 -->
+<div id="girlCallBox" class="overlay">
+    <div class="mbox" style="text-align:center">
+        <h2>📞 Call Out</h2>
+        <div style="font-size:16px;color:#204060;padding:6px 0 14px;">請現場點名一位幫你回答</div>
+        <button class="btn btn-main" onclick="closeGirlCall()">知道了</button>
+    </div>
+</div>
+
+<!-- 兌換所 -->
+<div id="exchangeBox" class="overlay">
+    <div class="mbox">
+        <button class="close" onclick="closeOverlay('exchangeBox')">✕</button>
+        <h2>💰 Lemon 的兌換所</h2>
+        <div style="font-size:13px;color:#7f9ab3;margin-bottom:8px;">用背包道具換生日點數</div>
+        <div id="exGrid" class="grid3"></div>
+    </div>
+</div>
+
+<!-- 旅程結算 -->
+<div id="settlementBox" class="overlay">
+    <div class="mbox">
+        <button class="close" onclick="closeOverlay('settlementBox')">✕</button>
+        <h2>🏆 旅程紀錄</h2>
+        <div id="settleBody"></div>
+    </div>
+</div>
+
+<div id="toast"></div>
+<input type="file" id="photoInput" accept="image/*" style="display:none">
+
+<!-- 拍照方式選單 -->
+<div id="photoSub">
+    <div class="mbox" style="text-align:center">
+        <h2>📷 拍照任務</h2>
+        <div style="font-size:14px;color:#7f9ab3;margin-bottom:10px">選擇拍照方式</div>
+        <button class="photoSubBtn cam" onclick="photoSubChoice('camera')">📷 拍攝</button>
+        <button class="photoSubBtn up" onclick="photoSubChoice('upload')">🖼️ 上傳</button>
+        <button class="photoSubBtn cancel" onclick="photoSubChoice('cancel')">✕ 取消</button>
+    </div>
+</div>
+
+<!-- 升級特效 -->
+<div id="levelUpOverlay">
+    <div class="levelUpParticles" id="levelUpParticles"></div>
+    <div class="levelUpBox">
+        <div class="levelUpTitle" id="levelUpTitle">LEVEL UP!</div>
+        <div class="levelUpLv" id="levelUpLv">Lv.2</div>
+    </div>
+</div>
+
+<script>
+/* ============ 資源清單 ============ */
+const bodyFiles=["images/body/body1.png","images/body/body2.png","images/body/body3.png","images/body/body4.png"];
+const hairFiles=["images/hair/hair1.png","images/hair/hair2.png","images/hair/hair3.png","images/hair/hair4.png","images/hair/hair5.png"];
+const clothesFiles=["images/clothes/clothes1.png","images/clothes/clothes2.png","images/clothes/clothes3.png","images/clothes/clothes4.png","images/clothes/clothes5.png"];
+const wingFiles=[null,"images/wings/wings1.png","images/wings/wings2.png"];
+let bodyIndex=0,hairIndex=0,clothesIndex=0,wingIndex=0;
+let charSel={body:true,hair:false,clothes:false,wings:false};
+let curSel="body";
+
+/* ============ 道具 ============ */
+const ITEMS={
+    coin:{name:"一顆俗頭",icon:"images/items/coin.png",val:3000},
+    potion_red:{name:"石垣島辣油",icon:"images/items/potion_red.png",val:500},
+    potion_blue:{name:"鰹魚醬油",icon:"images/items/potion_blue.png",val:2000},
+    gem_green:{name:"綠色的俗頭",icon:"images/items/gem_green.png",val:3000},
+    gem_blue:{name:"藍色的俗頭",icon:"images/items/gem_blue.png",val:3000},
+    key:{name:"鼎宇森林之星的鑰匙",icon:"images/items/key.png",val:5000},
+    scroll:{name:"柯達的一次性相機",icon:"images/items/scroll.png",val:2000},
+    crown:{name:"裝著不明液體的試管",icon:"images/items/crown.png",val:500},
+    fish:{name:"全聯的雕背肉",icon:"images/items/fish.png",val:1000},
+    flower:{name:"漂亮花花",icon:"images/items/flower.png",val:1500},
+    lobster:{name:"大龍蝦",icon:"images/items/lobster.png",val:1500},
+    star:{name:"拇指角力受傷可以用的OK繃",icon:"images/items/star.png",val:1000},
+};
+const CHEST_LOOT=["coin","coin","fish","fish","sandwich","flower","flower","gem_green","gem_blue","key","scroll","potion_red","potion_blue","lobster","star","crown"];
+
+/* ============ 拍照任務 ============ */
+const PHOTO_QUESTS=[
+{id:"p1",loc:"Perth市區",t:"跟Elizabeth Quay 的拱橋自拍一張"},
+{id:"p2",loc:"Perth市區",t:"在國王公園的草地躺著拍一張"},
+{id:"p3",loc:"Perth市區",t:"紀錄fremantle market的人潮"},
+{id:"p4",loc:"Perth市區",t:"捕捉到野生的袋鼠"},
+{id:"p5",loc:"Perth市區",t:"與outlet的戰利品合照一張"},
+{id:"p6",loc:"Perth市區",t:"在喜來登飯店前裝做一副I'm rich的樣子"},
+{id:"p7",loc:"Perth市區",t:"拍下豐富的飯店早餐"},
+{id:"p8",loc:"Perth市區",t:"在Perth Royal Show現場自拍一張"},
+{id:"p9",loc:"羅特尼斯島",t:"與Quokka一起自拍微笑"},
+{id:"p10",loc:"羅特尼斯島",t:"和女朋友一起跟 Quokka 合照"},
+{id:"p11",loc:"羅特尼斯島",t:"紀錄被Quokka搶食物的畫面"},
+{id:"p12",loc:"羅特尼斯島",t:"拍下島上的燈塔"},
+{id:"p13",loc:"羅特尼斯島",t:"一下船那刻的回頭照"},
+{id:"p14",loc:"羅特尼斯島",t:"你的腳丫＋沙灘"},
+{id:"p15",loc:"羅特尼斯島",t:"在海上浮潛"},
+{id:"p16",loc:"Jurien Bay",t:"白沙灘上張開手臂的背影照"},
+{id:"p17",loc:"Jurien Bay",t:"在木碼頭小跑步"},
+{id:"p18",loc:"Jurien Bay",t:"吃著好吃的肉派"},
+{id:"p19",loc:"Jurien Bay",t:"在城鎮上亂晃隨意亂拍"},
+{id:"p20",loc:"龍蝦小鎮",t:"與剛上桌的大龍蝦合照"},
+{id:"p21",loc:"龍蝦小鎮",t:"在龍蝦小屋招牌前自拍一張"},
+{id:"p22",loc:"龍蝦小鎮",t:"舉起龍蝦殼的勝利姿勢"},
+{id:"p23",loc:"尖峰石陣",t:"在石陣前方拍沉思剪影"},
+{id:"p24",loc:"尖峰石陣",t:"錯位照：你比石柱還高"},
+{id:"p25",loc:"尖峰石陣",t:"四人與石柱的雜誌封面照"},
+{id:"p26",loc:"尖峰石陣",t:"拍下最高的那根石柱"},
+{id:"p27",loc:"Kalbarri",t:"自然之窗（Nature's Window）經典照"},
+{id:"p28",loc:"Kalbarri",t:"拍下一堆蚊蟲"},
+{id:"p29",loc:"Kalbarri",t:"天空步道往下看的照片"},
+{id:"p30",loc:"Kalbarri",t:"出現在Kalbarri national park的野生動物們"},
+{id:"p31",loc:"Kalbarri",t:"和女友在俗頭面前拍照"},
+{id:"p32",loc:"粉紅湖",t:"粉紅湖一望無際的全景"},
+{id:"p33",loc:"粉紅湖",t:"踩在白色鹽灘上"},
+{id:"p34",loc:"粉紅湖",t:"與女朋友在粉紅湖前比愛心"},
+{id:"p35",loc:"粉紅湖",t:"跳起來的空中照"},
+{id:"p36",loc:"Geraldton",t:"記錄民宿裡大家在玩樂的樣子"},
+{id:"p37",loc:"Geraldton",t:"拍下Geraldton的星空"},
+{id:"p38",loc:"Geraldton",t:"海岸線的日落"},
+{id:"p39",loc:"Geraldton",t:"拍下Geraldton鎮上的大教堂"},
+{id:"p40",loc:"Royal Show",t:"摩天輪前自拍"},
+{id:"p41",loc:"Royal Show",t:"和動物區的牛牛合照"},
+{id:"p42",loc:"Royal Show",t:"炫耀你買到的 showbag"},
+{id:"p43",loc:"朋友互動",t:"彥伶睡著的照片"},
+{id:"p44",loc:"朋友互動",t:"女友可愛到不行的照片"},
+{id:"p45",loc:"朋友互動",t:"stanly的醜照"}
+];
+
+/* ============ 每日任務 ============ */
+const DAILY=[
+{id:"poo",q:"今天上了幾次大號？",type:"num"},
+{id:"km",q:"今天開車開了幾公里？",type:"num"},
+{id:"kangaroo",q:"今天看到幾隻袋鼠？",type:"num"},
+{id:"aud",q:"今天花了多少澳幣？",type:"num"},
+{id:"beach",q:"今天去了幾個海灘？",type:"num"},
+{id:"fight",q:"有跟女朋友吵架嗎？",type:"choice",choices:[{v:"no",l:"沒有～感情超好 ✌️",pts:100},{v:"yes",l:"吵了 😅",pts:0}]}
+];
+
+/* ============ 冷知識 ============ */
+const TRIVIA=[
+{q:"澳洲國徽上有哪兩種動物？",o:["袋鼠＋鴯鶓","袋鼠＋無尾熊","鴯鶓＋笑翠鳥","無尾熊＋袋狸"],a:0},
+{q:"Perth 是哪一州的首府？",o:["南澳","新南威爾斯","西澳","昆士蘭"],a:2},
+{q:"羅特尼斯島上最出名的動物是？",o:["沙袋鼠","短尾矮袋鼠","針鼴","袋鼬"],a:1},
+{q:"「短尾矮袋鼠」的特色是什麼？",o:["會飛","愛笑","會挖土","很兇猛"],a:1},
+{q:"澳洲最大的珊瑚礁系統叫什麼？",o:["大堡礁","尼加拉瓜礁","普吉環礁","紅海"],a:0},
+{q:"澳洲原住民的傳統樂器是？",o:["笛子","迪吉里杜管","鼓","口琴"],a:1},
+{q:"澳洲最大城市是？",o:["雪梨","墨爾本","Perth","布里斯本"],a:0},
+{q:"澳洲人打招呼常說？",o:["G'day","Hola","Sawasdee","Konbanwa"],a:0},
+{q:"澳洲「笑翠鳥」(Kookaburra) 的叫聲像什麼？",o:["狗吠","笑聲","警笛","貓叫"],a:1},
+{q:"澳洲發源地有名的咖啡叫？",o:["Flat White","拿鐵","卡布奇諾","美式"],a:0},
+{q:"粉紅湖 Hutt Lagoon 為什麼是粉紅色？",o:["因為藻類","因為鹽分濃度","因為特別的沙子","因為太陽照射角度"],a:0},
+{q:"尖峰石陣（Pinnacles）位於哪個國家公園？",o:["Nambung","雪梨港","Karijini","Uluru"],a:0},
+{q:"澳洲的袋鼠數量比人還多，對嗎？",o:["對","錯"],a:0},
+{q:"雪梨歌劇院的造型靈感是？",o:["橘子瓣","揚帆的船","海浪","貝殼"],a:1},
+{q:"Kalbarri 著名的岩石拱門叫？",o:["自然之窗","天堂之門","巨石陣","上帝之手"],a:0},
+{q:"最早把 Rottnest 的 Quokka 誤認成「大老鼠」的是？",o:["荷蘭探險家","英國囚犯","原住民","美國水手"],a:0},
+{q:"澳洲國慶日是幾月幾日？",o:["1月26日","12月25日","7月4日","10月1日"],a:0},
+{q:"Rottnest 島上主要的交通工具是？",o:["自行車","計程車","火車","遊艇"],a:0},
+{q:"澳洲郵遞區號是幾位數字？",o:["4位","5位","6位","3位"],a:0},
+{q:"雪梨港大橋的綽號叫？",o:["衣架","大鐵軌","金拱門","巨蟒"],a:0},
+{q:"澳洲官方語言是？",o:["英語","英語＋原住民語共通","法語","荷語"],a:0}
+];
+
+/* ============ 地圖 ============ */
+const MAP_GRIDS={
+    map1:[
+"1111111111111111","1111111111111111","1111111111111111","1111111111111111",
+"1100001111111111","1000001000000111","1000001000000111","1000001000000111",
+"1000001100011111","1000000000000001","1000000000000001","1000000000000001",
+"1000000000000001","1000000000000001","1000000000000001","1100000000000001",
+"1100000011111111","1100000010000111","1100000010000111","1100000010000111",
+"1100000011111111","1100000011111111","1100000011111111","1100000011111111",
+"1100000000000001","1100000000000001","1100000000000001","1100000000000001",
+"1100000000000001","1111111111111111"],
+    map2:[
+"1111111111111111","1111111111111111","1111000000001111","1100000000000111",
+"1000000000000011","0000000000000011","0000000000000011","1000011000000011",
+"1100011000000011","1111111100000011","1110000100000011","1100000000000111",
+"1100000100001111","1000000111111111","1000000111111111","1110000000000011",
+"1110000000000001","1110000000000001","1110000000000011","1100000000000111",
+"1100000000001111","1100000000111111","1111110000111111","1000000000011111",
+"1000000000001111","1000000000001111","1000000000001111","1000000000001111",
+"1000000000001111","1111111111111111"],
+    map3:[
+"0000000000001111","0000000000001111","0000000000001111","0000000000001111",
+"0000000000001111","0000100000001111","1001100000011111","1111111101111111",
+"1111111101111111","0111111101111111","0001011101101111","0001011001101111",
+"0001011001101111","0001011001101111","0000000000101111","0000000000001111",
+"0000000000000000","0000000001000000","0000010001001000","0000011001001000",
+"0000011001000000","0001111011111000","0001111011111000","1111100011111000",
+"1111100011111000","1111100011111000","0000000000001000","0000001000001001",
+"0000001000000001","0000001000000001"]
+};
+function gridToRects(g){
+    const CW=100/g[0].length,CH=100/g.length,out=[];
+    for(let y=0;y<g.length;y++){
+        const row=g[y];let x=0;
+        while(x<row.length){
+            if(row[x]==="1"){
+                let x2=x;
+                while(x2<row.length&&row[x2]==="1")x2++;
+                out.push([x*CW,y*CH,(x2-x)*CW,CH]);
+                x=x2;
+            }else{x++;}
+        }
+    }
+    return out;
+}
+const MAP1_COLL=gridToRects(MAP_GRIDS.map1);
+const MAP2_COLL=gridToRects(MAP_GRIDS.map2);
+const MAP3_COLL=gridToRects(MAP_GRIDS.map3);
+const MAPS={
+    map1:{name:"Perth",bg:"background/map1.png",start:{x:35,y:90},coll:MAP1_COLL,
+        chests:[],npcs:["mou","samuel"]},
+    map2:{name:"Rottnest Island",bg:"background/map2.png",start:{x:28.125,y:15.667},coll:MAP2_COLL,
+        chests:[{id:1,x:66.25,y:60.417},{id:2,x:33.75,y:89.583}],
+        npcs:["lemon","yanp"]},
+    map3:{name:"kalbarri",bg:"background/map3.png",start:{x:22,y:16},coll:MAP3_COLL,
+        chests:[{id:1,x:12.5,y:88.34},{id:2,x:62.5,y:88.34}],
+        npcs:["lemon3","stanly","jing"]}
+};
+const COLL_FILES={map1:"background/json/map1-2.json",map2:"background/json/map2-2.json",map3:"block/map3.json"};
+async function loadCollJson(){
+    for(const k in COLL_FILES){
+        try{
+            const res=await fetch(COLL_FILES[k]);
+            if(!res.ok)continue;
+            const arr=await res.json();
+            const rects=(arr||[]).filter(function(o){
+                return o&&typeof o.x==="number"&&typeof o.y==="number"&&o.width>0&&o.height>0;
+            }).map(function(o){return [o.x,o.y,o.width,o.height];});
+            if(rects.length){MAPS[k].coll=rects;}
+        }catch(e){}
+    }
+    sanitizeChests();
+    if(P&&MAPS[currentMap])collisions=MAPS[currentMap].coll.slice();
+    if(P)refreshView();
+}
+function pointBlockedOn(mapId,px,py){
+    const coll=MAPS[mapId].coll||[];
+    for(const c of coll){
+        if(px>=c[0]&&px<=c[0]+c[2]&&py>=c[1]&&py<=c[1]+c[3])return true;
+    }
+    return false;
+}
+function sanitizeChests(){
+    for(const key in MAPS){
+        (MAPS[key].chests||[]).forEach(function(c){
+            if(!pointBlockedOn(key,c.x,c.y))return;
+            let best=null,bd=-1;
+            for(let r=0;r<24;r++){
+                for(let col=0;col<20;col++){
+                    const px=col*5+2.5,py=r*(100/24)+100/48;
+                    if(pointBlockedOn(key,px,py))continue;
+                    const d=Math.pow(px-c.x,2)+Math.pow(py-c.y,2);
+                    if(bd<0||d<bd){bd=d;best=[px,py];}
+                }
+            }
+            if(best){c.x=best[0];c.y=Math.round(best[1]*1000)/1000;}
+        });
+    }
+}
+
+const NPCS={
+    mou:{name:"N.K. Mou",img:"NPC/cow.png",map:"map1",x:59.375,y:30.5,dialog:[
+        "哞～我是哞～乃寬！讓我來教你如何在這世界生存",
+        "每天都可以去下方找Samuel接取每日任務，完成每日任務可得到生日點數！",
+        "這些生日點數在10月3號後會結算，可以去找Lemon本人換取禮物",
+        "島的最下方有一座猜謎塔，每天都有一題冷知識題可以作答",
+        "答對了就可以拿到寶物！要是答錯了當天就沒有機會了喔！",
+        "而左邊的城鎮中心可以接取拍照任務，只要根據任務內容上傳或是拍攝指定照",
+        "就可以獲得EXP！提升等級到10等跟20等就可以解鎖新地圖喔！",
+        "新地圖上有其他NPC及寶物可以尋找，有不懂的可以再問我～哞～"]},
+    samuel:{name:"Samuel",img:"NPC/llama.png",map:"map1",x:69.792,y:54.2,daily:true,dialog:[
+        "嗯嗯，願主與你同在，你是來解每日任務的嗎？"]},
+    stanly:{name:"Stanly",img:"NPC/bull.png",map:"map3",x:87.5,y:71.67,dialog:[
+        "今年總算要繳所得稅了，我好窮...",
+        "欸是修哥！你要不要看我花好久時間寫出來的系統！",
+        "什麼你不想看喔...",
+        "對了！Perth的小島上住著一位神秘老伯，要不要我帶你過去找他？"]},
+    lemon:{name:"Lemon",img:"NPC/rat1.png",map:"map2",x:40.625,y:65,shop:true,dialog:[
+        "餒？有禮物嗎？"]},
+    lemon3:{name:"Lemon",img:"NPC/rat1.png",map:"map3",x:12.5,y:69.17,shop:true,dialog:[
+        "餒？我要禮物～"]},
+    yanp:{name:"彥P",img:"NPC/rat2.png",map:"map2",x:65.625,y:21.667,dialog:[
+        "博士班總算畢業了，好不想找工作",
+        "唉唷這不是修哥嗎？你總算來到羅特尼斯島了",
+        "島上有兩個寶箱，撿到好東西就可以去找李孟軒換成生日點數"]},
+    jing:{name:"Jing",img:"NPC/sheep.png",map:"map3",x:62.5,y:21.67,dialog:[
+        "喔？威廉？要不要抱石？KLA有缺人嗎？",
+        "最近五十肩...手都舉不起來..."]}
+};
+
+const SMALL_NPCS=["lemon","lemon3","yanp"];
+const TINY_NPCS=["mou","samuel","stanly","jing"];
+function npcDisplayH(id){
+    if(TINY_NPCS.indexOf(id)>-1)return 32;
+    if(SMALL_NPCS.indexOf(id)>-1)return 48;
+    return 96;
+}
+
+/* ============ 互動區域 ============ */
+const ZONES=[
+    {id:"town",map:"map1",type:"photo",rect:[18,20,24,13],label:"📷 城鎮任務中心"},
+    {id:"mystery",map:"map1",type:"girl",rect:[50,60,12.5,6.67],label:"💘 女友大哉問"},
+    {id:"trivia",map:"map1",type:"trivia",rect:[62.5,83.33,12.5,10],label:"🗼 冷知識猜謎塔"}
+];
+function mapZones(){
+    const out=ZONES.filter(function(zo){return zo.map===currentMap;});
+    MAPS[currentMap].npcs.forEach(function(id){
+        const n=NPCS[id];
+        out.push({id:"npc_"+id,map:currentMap,type:"npc",npc:id,
+            rect:[n.x-9.375,n.y-5,18.75,10],label:"💬 "+n.name});
+    });
+    const opened=(P&&P.opened&&P.opened[currentMap])||[];
+    (MAPS[currentMap].chests||[]).forEach(function(c){
+        if(opened.indexOf(c.id)>-1)return;
+        out.push({id:"chest_"+currentMap+"_"+c.id,map:currentMap,type:"chest",cid:c.id,
+            rect:[c.x-9.375,c.y-5,18.75,10],label:"🎁 寶箱"});
+    });
+    return out;
+}
+
+/* ============ 全域狀態 ============ */
+let currentUser=null;
+let P=null;
+let currentMap="map1";
+let collisions=[];
+let playerX=40,playerY=70,targetX=40,targetY=70,isMoving=false,currentFrame=0,direction=40;
+const STAND_X=0,STAND_Y=2;
+let isDialogOpen=false,dlgPages=[],dlgNpc=null,dlgPage=0;
+let editMode=false;
+let pendingPhotoQuest=null;
+let dlgOnClose=null,activeZone=null;
+let dlgBtnText=null,dlgChoice=null;
+let currentTrivia=null;
+const dailyAnswers={};
+let frameTimer=0;
+
+const LS_ACCOUNTS="pq_accounts";
+function getAccounts(){try{return JSON.parse(localStorage.getItem(LS_ACCOUNTS))||{"test":"test"};}catch(e){return {"test":"test"};}}
+function profKey(u){return "pq_profile_"+u;}
+
+/* ============ 工具 ============ */
+function toast(msg){
+    const t=document.getElementById("toast");
+    t.innerHTML=msg;t.style.display="block";
+    clearTimeout(t._h);t._h=setTimeout(function(){t.style.display="none";},2600);
+}
+function todayStr(){
+    const d=new Date();
+    return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+}
+function pad(n,w){return String(n).padStart(w||2,"0");}
+function measureContentTop(canvas){
+    if(!canvas)return 0;
+    const ctx=canvas.getContext("2d");
+    let data;
+    try{data=ctx.getImageData(0,0,64,64).data;}catch(e){return 0;}
+    for(let y=0;y<64;y++){
+        for(let x=0;x<64;x++){
+            if(data[(y*64+x)*4+3]>15)return y;
+        }
+    }
+    return 0;
+}
+function labelBottomPx(dispH,top){
+    const topPx=top/64*dispH;
+    return dispH-topPx;
+}
+
+/* ============ 存檔 ============ */
+function saveProfile(){
+    localStorage.setItem(profKey(currentUser),JSON.stringify(P));
+}
+function loadProfile(user){
+    const raw=localStorage.getItem(profKey(user));
+    if(!raw) return null;
+    const d=JSON.parse(raw);
+    d.inventory=d.inventory||{};
+    d.opened=d.opened||{};
+    d.photos=d.photos||[];
+    d.donePhotos=d.donePhotos||[];
+    d.daily=d.daily||{date:"",done:false};
+    d.trivia=d.trivia||{date:"",done:false};
+    d.stats=d.stats||{poo:0,km:0,kangaroo:0,aud:0,beach:0,fight:0,photos:0,chests:0};
+    d.layers=d.layers||{body:true,hair:true,clothes:true,wings:true};
+    d.pos=d.pos||{map1:{x:30,y:90},map2:{x:28.125,y:11.667},map3:{x:22,y:19}};
+    d.intro=d.intro||false;
+    return d;
+}
+
+/* ============ 角色繪製 ============ */
+const _imgCache={};
+function cachedImg(src){
+    if(!_imgCache[src]){const im=new Image();im.src=src;_imgCache[src]=im;}
+    return _imgCache[src];
+}
+function drawCharacter(canvasId){
+    const canvas=document.getElementById(canvasId);
+    if(!canvas)return;
+    const ctx=canvas.getContext("2d");
+    const body=cachedImg(bodyFiles[bodyIndex]);
+    const hair=cachedImg(hairFiles[hairIndex]);
+    const cloth=cachedImg(clothesFiles[clothesIndex]);
+    if(!(body.complete&&body.naturalWidth>0)||!(hair.complete&&hair.naturalWidth>0)||!(cloth.complete&&cloth.naturalWidth>0)){
+        [body,hair,cloth].forEach(function(im){
+            if(!im._q){im._q=true;im.onload=function(){im._q=false;drawCharacter(canvasId);};}
+        });
+        return;
+    }
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    const size=64;
+    const moving=canvasId==="gameCanvas"&&isMoving;
+    let frameX=moving?currentFrame*64:STAND_X*64;
+    let frameY=moving?direction*64:STAND_Y*64;
+    const mask=(canvasId==="characterCanvas")?charSel:((P&&P.layers)||{body:true,hair:true,clothes:true,wings:true});
+    if(mask.wings&&wingFiles[wingIndex]){
+        const wing=cachedImg(wingFiles[wingIndex]);
+        if(wing.complete&&wing.naturalWidth>0)ctx.drawImage(wing,frameX,frameY,size,size,0,0,size,size);
+    }
+    if(mask.body)ctx.drawImage(body,frameX,frameY,size,size,0,0,size,size);
+    if(mask.clothes)ctx.drawImage(cloth,frameX,frameY,size,size,0,0,size,size);
+    if(mask.hair)ctx.drawImage(hair,frameX,frameY,size,size,0,0,size,size);
+    if(canvasId==="gameCanvas"){
+        const nameEl=document.getElementById("playerNameGame");
+        if(nameEl)nameEl.style.bottom=labelBottomPx(48,measureContentTop(canvas))+"px";
+    }
+}
+function updateCharacter(){
+    drawCharacter("characterCanvas");
+    drawCharacter("previewCanvas");
+    drawCharacter("gameCanvas");
+}
+function changeBody(step){bodyIndex+=step;if(bodyIndex<0)bodyIndex=bodyFiles.length-1;if(bodyIndex>=bodyFiles.length)bodyIndex=0;document.getElementById("bodyText").innerText="Body "+(bodyIndex+1);updateCharacter();}
+function changeHair(step){hairIndex+=step;if(hairIndex<0)hairIndex=hairFiles.length-1;if(hairIndex>=hairFiles.length)hairIndex=0;document.getElementById("hairText").innerText="Hair "+(hairIndex+1);updateCharacter();}
+function changeClothes(step){clothesIndex+=step;if(clothesIndex<0)clothesIndex=clothesFiles.length-1;if(clothesIndex>=clothesFiles.length)clothesIndex=0;document.getElementById("clothesText").innerText="Clothes "+(clothesIndex+1);updateCharacter();}
+function changeWings(step){wingIndex+=step;if(wingIndex<0)wingIndex=wingFiles.length-1;if(wingIndex>=wingFiles.length)wingIndex=0;document.getElementById("wingsText").innerText=wingIndex===0?"No wings":"Wings "+wingIndex;updateCharacter();}
+function syncCreateIndex(c,val){
+    if(c==="body")bodyIndex=val;
+    else if(c==="hair")hairIndex=val;
+    else if(c==="clothes")clothesIndex=val;
+    else wingIndex=val;
+}
+function stepCreateIndex(c,step){
+    if(c==="body"){bodyIndex=(bodyIndex+step+bodyFiles.length)%bodyFiles.length;}
+    else if(c==="hair"){hairIndex=(hairIndex+step+hairFiles.length)%hairFiles.length;}
+    else if(c==="clothes"){clothesIndex=(clothesIndex+step+clothesFiles.length)%clothesFiles.length;}
+    else{wingIndex=(wingIndex+step+wingFiles.length)%wingFiles.length;}
+}
+function resetCreate(){
+    bodyIndex=0;hairIndex=0;clothesIndex=0;wingIndex=0;
+    charSel={body:true,hair:false,clothes:false,wings:false};
+    curSel="body";
+}
+function selectCreate(c){
+    if(!charSel[c]){charSel[c]=true;syncCreateIndex(c,0);}
+    curSel=c;
+    renderCreateSel();
+    updateCharacter();
+}
+function createChange(c,step){
+    if(!charSel[c]){charSel[c]=true;syncCreateIndex(c,0);}
+    else{stepCreateIndex(c,step);}
+    curSel=c;
+    renderCreateSel();
+    updateCharacter();
+}
+function renderCreateSel(){
+    const cats=[
+        {k:"body",l:"body",val:"Body "+(bodyIndex+1)},
+        {k:"hair",l:"hair",val:"Hair "+(hairIndex+1)},
+        {k:"clothes",l:"clothes",val:"Clothes "+(clothesIndex+1)},
+        {k:"wings",l:"wings",val:wingIndex===0?"No wings":"Wings "+wingIndex}
+    ];
+    let html="";
+    cats.forEach(function(c){
+        const active=charSel[c.k];
+        html+='<div class="createRow'+(curSel===c.k?" sel":"")+'" data-c="'+c.k+'" onclick="selectCreate(\''+c.k+'\')">';
+        html+='<span class="createLabel">&lt;'+c.l+'&gt;</span>';
+        if(active){
+            html+='<span class="createArw" onclick="event.stopPropagation();createChange(\''+c.k+'\',-1)">◀</span>';
+            html+='<span class="createVal">'+c.val+'</span>';
+            html+='<span class="createArw" onclick="event.stopPropagation();createChange(\''+c.k+'\',1)">▶</span>';
+        }else{
+            html+='<span class="createVal na">N/A</span>';
+            html+='<span class="createArw ghost">▶</span>';
+        }
+        html+='</div>';
+    });
+    document.getElementById("createList").innerHTML=html;
+}
+
+/* ============ 登入/流程 ============ */
+function login(){
+    const user=document.getElementById("username").value.trim();
+    const pwd=document.getElementById("password").value;
+    const acc=getAccounts();
+    if(!user||!acc.hasOwnProperty(user)||acc[user]!==pwd){
+        toast("帳號或密碼錯誤");
+        return;
+    }
+    currentUser=user;
+    const d=loadProfile(user);
+    if(d){
+        P=d;applyVisual();
+        showScreen("characterPreviewPage");
+        document.getElementById("previewInfo").innerHTML=d.name+"<br>Lv."+d.level+"<br>EXP "+d.exp+"/20";
+        drawCharacter("previewCanvas");
+    }else{
+        showScreen("createPage");
+    }
+}
+function applyVisual(){
+    bodyIndex=P.body;hairIndex=P.hair;clothesIndex=P.clothes;wingIndex=P.wings;
+}
+function showScreen(id){
+    ["loginPage","createPage","characterPreviewPage","gamePage"].forEach(function(s){
+        document.getElementById(s).style.display=(s===id)?"flex":"none";
+    });
+    if(id==="createPage"){
+        resetCreate();
+        renderCreateSel();
+        drawCharacter("characterCanvas");
+    }
+}
+function backLogin(){
+    closeAllOverlays();
+    currentUser=null;P=null;
+    showScreen("loginPage");
+}
+function startAdventure(){
+    const data={
+        name:document.getElementById("characterName").value.trim()||"Player",
+        body:bodyIndex,hair:hairIndex,clothes:clothesIndex,wings:wingIndex,
+        level:1,exp:0,points:0,
+        currentMap:"map1",
+        inventory:{},opened:{},photos:[],donePhotos:[],
+        daily:{date:"",done:false},trivia:{date:"",done:false},
+        intro:false,
+        layers:Object.assign({},charSel),
+        stats:{poo:0,km:0,kangaroo:0,aud:0,beach:0,fight:0,photos:0,chests:0},
+        pos:{map1:{x:30,y:90},map2:{x:28.125,y:11.667},map3:{x:22,y:19}}
+    };
+    P=data;saveProfile();
+    showScreen("characterPreviewPage");
+    document.getElementById("previewInfo").innerHTML=data.name+"<br>Lv.1<br>EXP 0/20";
+    drawCharacter("previewCanvas");
+}
+function deleteCharacter(){
+    if(!confirm("確認刪除角色？"))return;
+    localStorage.removeItem(profKey(currentUser));
+    currentUser=null;P=null;
+    showScreen("loginPage");
+}
+
+/* ============ 進入遊戲 ============ */
+function showGamePage(){
+    if(!P)return;
+    applyVisual();
+    closeAllOverlays();
+    showScreen("gamePage");
+    document.getElementById("playerNameGame").innerText=P.name;
+    document.getElementById("plrName").innerText=P.name+" · "+currentUser;
+    currentMap=P.currentMap||"map1";
+    updateHUD();
+    fitGameArea();
+    enterMap(currentMap,false);
+    drawCharacter("gameCanvas");
+    if(!P.intro){
+        P.intro=true;saveProfile();
+        dlgNpc=null;
+        startDialog([
+            "歡迎你來到Perth，「"+P.name+"」！",
+            "這是你女朋友用心製作的一個累積生日點數的小遊戲！",
+            "先去找上方的N.K. Mou說說話吧，他會指引你如何累積點數。"
+        ]);
+    }
+}
+function fitGameArea(){
+    const stage=document.getElementById("gameStage");
+    const area=document.getElementById("gameArea");
+    if(!stage||!area)return;
+    computeView();
+}
+let view={s:1,x0:0,y0:0};
+function computeView(){
+    const area=document.getElementById("gameArea");
+    if(!area)return;
+    const sx=area.clientWidth||1, sy=area.clientHeight||1;
+    const s=Math.max(sx/384,sy/480);
+    const sw=384*s, sh=480*s;
+    view={s:s,x0:(sw-sx)/2,y0:(sh-sy)/2,sx:sx,sy:sy};
+}
+function toStageFx(ppx){return (ppx/100*384*view.s-view.x0)/view.sx*100;}
+function toStageFy(ppy){return (ppy/100*480*view.s-view.y0)/view.sy*100;}
+function toImageX(ppx){return (ppx/100*view.sx+view.x0)/(384*view.s)*100;}
+function toImageY(ppy){return (ppy/100*view.sy+view.y0)/(480*view.s)*100;}
+function refreshView(){
+    computeView();
+    const p=document.getElementById("playerCharacter");
+    if(p){p.style.left=toStageFx(playerX)+"%";p.style.top=toStageFy(playerY)+"%";}
+    buildMapObjects();
+    updateZoneBtn();
+}
+function enterMap(mapId,isTeleport){
+    currentMap=mapId;
+    const m=MAPS[mapId];
+    const area=document.getElementById("gameArea");
+    area.style.backgroundImage="url('"+m.bg+"')";
+    area.style.backgroundSize="cover";
+    collisions=m.coll.slice();
+    if(isTeleport){
+        playerX=m.start.x;playerY=m.start.y;
+    }else{
+        const sp=P.pos[mapId]||m.start;
+        playerX=sp.x;playerY=sp.y;
+    }
+    if(isBlocked(playerX,playerY)){playerX=m.start.x;playerY=m.start.y;}
+    targetX=playerX;targetY=playerY;
+    isMoving=false;currentFrame=0;direction=40;
+    computeView();
+    document.getElementById("playerCharacter").style.left=toStageFx(playerX)+"%";
+    document.getElementById("playerCharacter").style.top=toStageFy(playerY)+"%";
+    buildMapObjects();
+    updateZoneBtn();
+}
+function buildMapObjects(){
+    const layer=document.getElementById("objLayer");
+    layer.innerHTML="";
+    const m=MAPS[currentMap];
+    m.npcs.forEach(function(id){
+        const n=NPCS[id];
+        const d=document.createElement("div");
+        d.className="mapObj";d.id="obj_"+id;
+        const small=(TINY_NPCS.indexOf(id)>-1)?" npcThird":((SMALL_NPCS.indexOf(id)>-1)?" npcSmall":"");
+        const dispH=npcDisplayH(id);
+        d.style.left=toStageFx(n.x)+"%";d.style.top=toStageFy(n.y)+"%";
+        d.innerHTML='<canvas class="npcCanv'+small+'" width="64" height="64"></canvas><div class="npcInfo" style="bottom:'+dispH+'px"><div class="talkIcon">💬</div><div class="objName">'+n.name+'</div></div>';
+        layer.appendChild(d);
+        drawNpcOn(id,d.querySelector("canvas"));
+    });
+    const opened=(P.opened[currentMap]||[]);
+    m.chests.forEach(function(c){
+        if(opened.indexOf(c.id)>-1)return;
+        const d=document.createElement("div");
+        d.className="mapObj";d.id="obj_chest_"+c.id;
+        d.style.left=toStageFx(c.x)+"%";d.style.top=toStageFy(c.y)+"%";
+        d.innerHTML='<img class="chestImg" src="images/items/chest.png" alt="">';
+        layer.appendChild(d);
+    });
+}
+const npcImgCache={};
+const npcHeadTop={};
+function drawNpcOn(id,canvas){
+    const n=NPCS[id];
+    if(!canvas)return;
+    const ctx=canvas.getContext("2d");
+    const applyOffset=function(){
+        const top=measureContentTop(canvas);
+        const dispH=npcDisplayH(id);
+        npcHeadTop[id]=top;
+        const info=canvas.parentElement?canvas.parentElement.querySelector(".npcInfo"):null;
+        if(info)info.style.bottom=labelBottomPx(dispH,top)+"px";
+    };
+    const render=function(img){
+        ctx.clearRect(0,0,64,64);
+        const sc=Math.min(64/img.naturalWidth,64/img.naturalHeight);
+        const w=Math.round(img.naturalWidth*sc),h=Math.round(img.naturalHeight*sc);
+        ctx.drawImage(img,0,0,img.naturalWidth,img.naturalHeight,(64-w)/2,(64-h)/2,w,h);
+        applyOffset();
+    };
+    if(npcImgCache[id]){
+        const cimg=npcImgCache[id];
+        if(cimg.complete)render(cimg);
+        else cimg.onload=function(){render(cimg);};
+        return;
+    }
+    const im=new Image();im.src=n.img;
+    npcImgCache[id]=im;
+    im.onload=function(){render(im);};
+}
+function interactNpc(id){
+    const n=NPCS[id];
+    isMoving=false;currentFrame=0;
+    targetX=playerX;targetY=playerY;
+    dlgNpc=n;
+    if(id==="stanly"){
+        startDialog(n.dialog,null,null,{yLabel:"好啊！",yCb:goToMystery,nLabel:"不要",nCb:function(){toast("好吧～那就算了！");}});
+        return;
+    }
+    if(n.shop){startDialog(["餒，是要給我禮物嗎～"],openExchange,"沒錢了，我來換點數而已");return;}
+    if(n.daily){startDialog(n.dialog,openDaily);return;}
+    startDialog(n.dialog);
+}
+function openFloatDialog(id){
+    const n=NPCS[id];
+    isDialogOpen=true;
+    gFloat={i:0,id:id};
+    const d=document.getElementById("floatDialog");
+    d.style.display="block";
+    updateFloatDialog();
+    updateZoneBtn();
+}
+let gFloat=null;
+function updateFloatDialog(){
+    const n=NPCS[gFloat.id];
+    const d=document.getElementById("floatDialog");
+    const x=toStageFx(n.x),y=toStageFy(n.y);
+    const maxl=90,minl=8;
+    d.style.left=Math.min(maxl,Math.max(minl,x))+"%";
+    const dispH=SMALL_NPCS.indexOf(gFloat.id)>-1?48:96;
+    const top=npcHeadTop[gFloat.id]!==undefined?npcHeadTop[gFloat.id]:0;
+    const headPct=y-(dispH-top/64*dispH)/(view.sy||1)*100;
+    d.style.top=Math.max(4,headPct)+"%";
+    document.getElementById("floatDlgName").innerText=n.name;
+    document.getElementById("floatDlgText").innerText=n.dialog[gFloat.i];
+    const last=gFloat.i>=n.dialog.length-1;
+    document.getElementById("floatDlgBtn").innerText=last?"關閉 ✕":"繼續 ▸";
+}
+function floatDlgNext(){
+    const n=NPCS[gFloat.id];
+    gFloat.i++;
+    if(gFloat.i>=n.dialog.length){closeFloatDialog();return;}
+    updateFloatDialog();
+}
+function closeFloatDialog(resetFlag){
+    if(resetFlag!==false)isDialogOpen=false;
+    gFloat=null;
+    const d=document.getElementById("floatDialog");
+    if(d)d.style.display="none";
+    updateZoneBtn();
+}
+function openChest(c){
+    isMoving=false;currentFrame=0;
+    const loot=CHEST_LOOT[Math.floor(Math.random()*CHEST_LOOT.length)];
+    P.inventory[loot]=(P.inventory[loot]||0)+1;
+    P.opened[currentMap]=(P.opened[currentMap]||[]);
+    P.opened[currentMap].push(c.id);
+    P.stats.chests++;
+    saveProfile();
+    toast("🎁 寶箱開出「"+ITEMS[loot].name+"」！去找 Lemon 換點數吧");
+    buildMapObjects();
+    updateZoneBtn();
+}
+function travelTo(mapId){
+    P.currentMap=mapId;
+    stopMovement();
+    enterMap(mapId,true);
+    updateHUD();
+    saveProfile();
+    toast("抵達 "+MAPS[mapId].name);
+}
+function goToMystery(){
+    P.pos=Object.assign(P.pos||{},{map1:{x:62.208,y:66.5}});
+    P.currentMap="map1";
+    stopMovement();
+    enterMap("map1",false);
+    updateHUD();
+    saveProfile();
+    toast("到囉～神秘老伯就在你眼前！");
+}
+
+/* ============ 對話 ============ */
+function startDialog(pages,onClose,btnText,choice){
+    closeFloatDialog(false);
+    dlgPages=pages;dlgPage=0;isDialogOpen=true;dlgOnClose=onClose||null;
+    dlgBtnText=btnText||null;dlgChoice=choice||null;
+    document.getElementById("dialogBox").classList.add("show");
+    const dlgNameEl=document.getElementById("dlgName");
+    dlgNameEl.innerText=dlgNpc?dlgNpc.name:"";
+    dlgNameEl.style.display=dlgNpc?"block":"none";
+    document.getElementById("dlgText").innerText=dlgPages[0];
+    renderDialogCtrl();
+    updateZoneBtn();
+}
+function renderDialogCtrl(){
+    const last=dlgPage>=dlgPages.length-1;
+    const btn=document.getElementById("dlgBtn");
+    const cw=document.getElementById("dlgChoice");
+    if(dlgChoice&&last){
+        btn.style.display="none";
+        cw.style.display="flex";
+        cw.innerHTML='<button class="btn btn-main" style="margin:0" onclick="dlgChoicePick(true)">'+(dlgChoice.yLabel||"是")+'</button>'+
+            '<button class="btn btn-gray" style="margin:0" onclick="dlgChoicePick(false)">'+(dlgChoice.nLabel||"否")+'</button>';
+        return;
+    }
+    btn.style.display="";
+    cw.style.display="none";
+    btn.innerText=dlgOnClose?(dlgBtnText||"開始每日任務 ▶"):(last?"關閉 ✕":"繼續 ▸");
+}
+function dlgChoicePick(yes){
+    const c=dlgChoice;dlgChoice=null;dlgOnClose=null;
+    closeDialog();
+    if(c){if(yes&&c.yCb)c.yCb();if(!yes&&c.nCb)c.nCb();}
+}
+function dialogNext(){
+    dlgPage++;
+    if(dlgPage>=dlgPages.length){
+        closeDialog();
+        if(dlgOnClose){const cb=dlgOnClose;dlgOnClose=null;cb();}
+        return;
+    }
+    document.getElementById("dlgText").innerText=dlgPages[dlgPage];
+    renderDialogCtrl();
+}
+function closeDialog(){
+    isDialogOpen=false;
+    document.getElementById("dialogBox").classList.remove("show");
+    dlgNpc=null;
+    dlgChoice=null;dlgBtnText=null;
+    closeFloatDialog(false);
+    updateZoneBtn();
+}
+function closeOverlay(id){
+    document.getElementById(id).classList.remove("show");
+    if(id==="dailyBox"){renderDaily();}
+    updateZoneBtn();
+}
+function closeAllOverlays(){
+    ["dialogBox","photoMenu","photoWall","photoView","backpack","mapMenu","dailyBox","triviaBox","triviaPrompt","exchangeBox","settlementBox","photoSub","levelUpOverlay","girlBox","girlCallBox"].forEach(function(id){
+        document.getElementById(id).classList.remove("show");
+    });
+    isDialogOpen=false;
+    closeFloatDialog(false);
+}
+
+/* ============ 移動 ============ */
+function isBlocked(x,y){
+    for(const c of collisions){
+        if(x>=c[0]&&x<=c[0]+c[2]&&y>=c[1]&&y<=c[1]+c[3])return true;
+    }
+    return false;
+}
+function onAreaClick(e){
+    if(isDialogOpen||anyOverlayOpen())return;
+    const area=document.getElementById("gameArea");
+    const rect=area.getBoundingClientRect();
+    let ppx=((e.touches?(e.touches[0].clientX):e.clientX)-rect.left)/rect.width*100;
+    let ppy=((e.touches?(e.touches[0].clientY):e.clientY)-rect.top)/rect.height*100;
+    let tx=toImageX(ppx),ty=toImageY(ppy);
+    tx=Math.min(98,Math.max(2,tx));
+    ty=Math.min(97,Math.max(3,ty));
+    if(Math.sqrt(Math.pow(tx-playerX,2)+Math.pow(ty-playerY,2))<1.5)return;
+    if(isBlocked(tx,ty)){toast("被擋住了！");return;}
+    targetX=tx;targetY=ty;isMoving=true;
+}
+function anyOverlayOpen(){
+    return ["photoMenu","photoWall","photoView","backpack","mapMenu","dailyBox","triviaBox","triviaPrompt","exchangeBox","settlementBox","photoSub","levelUpOverlay","girlBox","girlCallBox"].some(function(id){
+        return document.getElementById(id).classList.contains("show");
+    });
+}
+function stopMovement(){
+    isMoving=false;currentFrame=0;direction=40;
+    drawCharacter("gameCanvas");
+}
+const MOVE_SPEED=35;
+let lastFrame=performance.now();
+function updateLoop(ts){
+    requestAnimationFrame(updateLoop);
+    const dt=Math.min(0.05,(ts-lastFrame)/1000||0);
+    lastFrame=ts;
+    if(!isMoving||isDialogOpen||anyOverlayOpen())return;
+    const dx=targetX-playerX,dy=targetY-playerY;
+    const dist=Math.sqrt(dx*dx+dy*dy);
+    if(dist<1){
+        stopMovement();
+        updateZoneBtn();
+        return;
+    }
+    const step=Math.min(MOVE_SPEED*dt,dist);
+    const nx=playerX+dx/dist*step,ny=playerY+dy/dist*step;
+    if(isBlocked(nx,ny)){
+        if(!isBlocked(nx,playerY)){playerX=nx;}
+        else if(!isBlocked(playerX,ny)){playerY=ny;}
+        else{stopMovement();updateZoneBtn();return;}
+    }else{playerX=nx;playerY=ny;}
+    direction=Math.abs(dx)>Math.abs(dy)?(dx>0?41:39):(dy>0?40:38);
+    frameTimer+=dt;
+    if(frameTimer>=0.12){frameTimer=0;currentFrame=(currentFrame+1)%8;}
+    document.getElementById("playerCharacter").style.left=toStageFx(playerX)+"%";
+    document.getElementById("playerCharacter").style.top=toStageFy(playerY)+"%";
+    drawCharacter("gameCanvas");
+    updateZoneBtn();
+}
+requestAnimationFrame(updateLoop);
+
+/* ============ 互動區域 ============ */
+function inRect(x,y,r){return x>=r[0]&&x<=r[0]+r[2]&&y>=r[1]&&y<=r[1]+r[3];}
+function updateZoneBtn(){
+    const btn=document.getElementById("zoneBtn");
+    if(!btn)return;
+    let z=null;
+    mapZones().forEach(function(zo){
+        if(zo.type==="none")return;
+        if(inRect(playerX,playerY,zo.rect)){z=zo;}
+    });
+    if(z&&!isDialogOpen&&!anyOverlayOpen()){
+        activeZone=z;
+        btn.style.display="block";
+        btn.style.left=toStageFx(z.rect[0]+z.rect[2]/2)+"%";
+        btn.style.top=toStageFy(z.rect[1]>=14?z.rect[1]-9:z.rect[1]+z.rect[3]+5)+"%";
+        btn.innerText=z.label;
+    }else{
+        activeZone=null;
+        btn.style.display="none";
+    }
+}
+function zoneBtnClick(e){
+    if(e&&e.stopPropagation)e.stopPropagation();
+    const z=activeZone;
+    if(!z)return;
+    if(z.type==="photo"){openPhotoMenu();}
+    else if(z.type==="trivia"){openTriviaPrompt();}
+    else if(z.type==="girl"){openGirlQuiz();}
+    else if(z.type==="npc"){interactNpc(z.npc);}
+    else if(z.type==="chest"){
+        const c=(MAPS[currentMap].chests||[]).find(function(cc){return cc.id===z.cid;});
+        if(c)openChest(c);
+    }
+}
+
+/* ============ HUD ============ */
+function updateHUD(){
+    document.getElementById("plrLv").innerText="Lv"+P.level;
+    document.getElementById("plrPoints").innerText="✨"+P.points;
+    const remain=20;
+    const pct=Math.min(100,P.exp/remain*100);
+    document.getElementById("expFill").style.width=pct+"%";
+    document.getElementById("photoCount").innerText="已完成 "+P.donePhotos.length+"/"+PHOTO_QUESTS.length;
+}
+function addExp(n){
+    P.exp+=n;
+    let lvups=0;
+    while(P.exp>=20){P.exp-=20;P.level++;lvups++;}
+    if(lvups>0){
+        showLevelUp();
+        toast("🌟 升級！現在 Lv."+P.level+(lvups>1?"（連升 "+lvups+" 級）":""));
+    }else{
+        updateHUD();
+    }
+    updateHUD();
+    saveProfile();
+}
+function showLevelUp(){
+    const ov=document.getElementById("levelUpOverlay");
+    document.getElementById("levelUpLv").innerText="Lv."+P.level+"！";
+    ov.classList.remove("show");
+    void ov.offsetWidth;
+    ov.classList.add("show");
+    const box=document.querySelector(".levelUpBox");
+    if(box){box.style.animation="none";void box.offsetWidth;box.style.animation="";}
+    const hold=document.getElementById("levelUpParticles");
+    hold.innerHTML="";
+    for(let i=0;i<24;i++){
+        const s=document.createElement("span");
+        const a=(i/24)*Math.PI*2;
+        const d=80+Math.random()*120;
+        s.style.left="50%";s.style.top="50%";
+        s.style.setProperty("--dx",Math.round(Math.cos(a)*d)+"px");
+        s.style.setProperty("--dy",Math.round(Math.sin(a)*d)+"px");
+        s.style.background=["#ffd166","#ff8c00","#fff","#7ef0ff"][i%4];
+        hold.appendChild(s);
+    }
+    clearTimeout(ov._t);
+    ov._t=setTimeout(function(){ov.classList.remove("show");},2600);
+}
+
+/* ============ 拍照任務 ============ */
+function openPhotoMenu(){
+    document.getElementById("photoMenu").classList.add("show");
+    renderQuests();
+    updateHUD();
+}
+function renderQuests(){
+    const list=document.getElementById("questList");
+    list.innerHTML="";
+    PHOTO_QUESTS.forEach(function(q){
+        const done=P.donePhotos.indexOf(q.id)>-1;
+        const row=document.createElement("div");
+        row.className="qrow";
+        row.innerHTML='<div class="qtitle">'+q.t+'<span class="locTag">'+q.loc+'</span></div>'+
+            (done?'<div class="qdone">✓</div>':'<button class="qbtn" onclick="shootQuest(\''+q.id+'\')">去拍</button>');
+        list.appendChild(row);
+    });
+}
+function shootQuest(qid){
+    pendingPhotoQuest=qid;
+    document.getElementById("photoSub").classList.add("show");
+}
+function photoSubChoice(mode){
+    const sub=document.getElementById("photoSub");
+    if(mode==="cancel"){pendingPhotoQuest=null;sub.classList.remove("show");return;}
+    sub.classList.remove("show");
+    const inp=document.getElementById("photoInput");
+    inp.removeAttribute("capture");
+    if(mode==="camera")inp.setAttribute("capture","environment");
+    inp.value="";
+    inp.onchange=handlePhotoSelected;
+    inp.click();
+}
+function handlePhotoSelected(ev){
+    const file=ev.target.files&&ev.target.files[0];
+    if(!file)return;
+    const reader=new FileReader();
+    reader.onload=function(){
+        compressImage(reader.result,function(dataUrl){
+            completePhoto(dataUrl);
+        });
+    };
+    reader.readAsDataURL(file);
+}
+function compressImage(src,cb){
+    const img=new Image();
+    img.onload=function(){
+        const MAX=480;
+        let w=img.width,h=img.height;
+        if(w>MAX){h=Math.round(h*MAX/w);w=MAX;}
+        const cv=document.createElement("canvas");
+        cv.width=w;cv.height=h;
+        const ctx=cv.getContext("2d");
+        ctx.drawImage(img,0,0,w,h);
+        cb(cv.toDataURL("image/jpeg",0.6));
+    };
+    img.src=src;
+}
+function completePhoto(dataUrl){
+    const q=PHOTO_QUESTS.find(function(x){return x.id===pendingPhotoQuest;});
+    if(!q)return;
+    if(P.donePhotos.indexOf(q.id)>-1){toast("這個任務已經完成囉～");return;}
+    P.donePhotos.push(q.id);
+    P.photos.push({qid:q.id,title:q.t,url:dataUrl,date:todayStr()});
+    P.stats.photos++;
+    saveProfile();
+    addExp(10);
+    toast("📸 拍到了！+10 EXP");
+    closeOverlay("photoMenu");
+    connectLocalPhotos();
+    openPhotoWall();
+}
+let idb=null;
+function idbOpen(){
+    return new Promise(function(res,rej){
+        const r=indexedDB.open("perthquest",1);
+        r.onupgradeneeded=function(){r.result.createObjectStore("full",{keyPath:"qid"});};
+        r.onsuccess=function(){res(r.result);};
+        r.onerror=function(){rej(r.error);};
+    });
+}
+function idbStore(obj){
+    idbOpen().then(function(db){
+        const tx=db.transaction("full","readwrite");
+        tx.objectStore("full").put(obj);
+    }).catch(function(){});
+}
+function idbLoad(){
+    return idbOpen().then(function(db){
+        return new Promise(function(res){
+            const tx=db.transaction("full","readonly");
+            const req=tx.objectStore("full").getAll();
+            req.onsuccess=function(){res(req.result||[]);};
+        });
+    }).catch(function(){return[];});
+}
+function connectLocalPhotos(){
+    const lastIdb=[];
+    idbLoad().then(function(list){
+        const keys=list.map(function(x){return x.qid;});
+        P.photos.forEach(function(p){
+            if(P.donePhotos.indexOf(p.qid)>-1&&keys.indexOf(p.qid)<0){
+                idbStore({qid:p.qid,url:p.url});
+            }
+        });
+    });
+}
+function openPhotoWall(){
+    document.getElementById("photoWall").classList.add("show");
+    const grid=document.getElementById("photoGrid");
+    grid.innerHTML="";
+    if(P.photos.length===0){
+        grid.innerHTML='<div style="text-align:center;color:#8aa4bd;padding:20px 0">還沒拍任何照片～快從📷開始旅行吧</div>';
+    }
+    P.photos.slice().reverse().forEach(function(p){
+        const cell=document.createElement("div");
+        cell.className="pcell";
+        cell.innerHTML='<img src="'+p.url+'" alt="" onclick="openPhotoView(\''+p.qid+'\')"><div class="ptag">'+p.date+'</div>';
+        grid.appendChild(cell);
+    });
+}
+function openPhotoView(qid){
+    const ph=P.photos.find(function(x){return x.qid===qid;});
+    if(!ph)return;
+    document.getElementById("pvImg").src=ph.url;
+    document.getElementById("pvTitle").innerText=ph.title;
+    document.getElementById("pvDate").innerText="拍攝於 "+ph.date;
+    document.getElementById("photoView").style.display="flex";
+}
+
+/* ============ 背包 ============ */
+function openBackpack(){
+    document.getElementById("backpack").classList.add("show");
+    renderBag();
+}
+function renderBag(){
+    const grid=document.getElementById("bagGrid");
+    grid.innerHTML="";
+    let empty=true;
+    for(const key in P.inventory){
+        if(P.inventory[key]>0){empty=false;break;}
+    }
+    if(empty){grid.innerHTML='<div style="width:100%;text-align:center;color:#8aa4bd;padding:16px 0">背包空空～去地圖上開寶箱吧！</div>';return;}
+    for(const key in P.inventory){
+        if(P.inventory[key]<=0)continue;
+        const it=ITEMS[key];
+        const slot=document.createElement("div");
+        slot.className="slot";
+        slot.innerHTML='<img src="'+it.icon+'" alt=""><div class="sn">'+it.name+'</div><div class="sv">'+it.val+' ✨</div><div class="sq">×'+P.inventory[key]+'</div>';
+        grid.appendChild(slot);
+    }
+}
+function openExchange(){
+    document.getElementById("exchangeBox").classList.add("show");
+    renderExchange();
+}
+function renderExchange(){
+    const grid=document.getElementById("exGrid");
+    grid.innerHTML="";
+    let any=false;
+    for(const key in P.inventory){
+        if(P.inventory[key]<=0)continue;
+        any=true;
+        const it=ITEMS[key];
+        const slot=document.createElement("div");
+        slot.className="slot";
+        slot.innerHTML='<img src="'+it.icon+'" alt=""><div class="sn">'+it.name+'</div><div class="sv">'+it.val+' ✨</div><div class="sq">×'+P.inventory[key]+'</div>'+
+            '<button class="qbtn" style="width:100%;margin-top:6px" onclick="exchangeOne(\''+key+'\')">兌換</button>';
+        grid.appendChild(slot);
+    }
+    if(!any){grid.innerHTML='<div style="width:100%;text-align:center;color:#8aa4bd;padding:16px 0">沒有道具可以換呢，去撿寶箱吧！</div>';}
+}
+function exchangeOne(key){
+    if(P.inventory[key]<=0)return;
+    const it=ITEMS[key];
+    P.inventory[key]--;
+    if(P.inventory[key]===0)delete P.inventory[key];
+    P.points+=it.val;
+    saveProfile();
+    toast("換到 "+it.val+" ✨ 生日點數！");
+    renderExchange();
+    updateHUD();
+}
+
+/* ============ MAP ============ */
+function openMapMenu(){
+    document.getElementById("mapMenu").classList.add("show");
+    const list=document.getElementById("islandList");
+    list.innerHTML="";
+    for(const key in MAPS){
+        const m=MAPS[key];
+        const is=document.createElement("div");
+        is.className="island";
+        is.innerHTML='<div class="thumb" style="background-image:url(\''+m.bg+'\')"></div><div><div class="iname">'+m.name+'</div><div class="idesc">'+(key===currentMap?"現在這裡":"點擊前往")+'</div></div>'+
+            (key===currentMap?'<div class="badge" style="margin-left:auto">📍</div>':'<button class="go" onclick="travelTo(\''+key+'\')">前往</button>');
+        list.appendChild(is);
+    }
+}
+
+/* ============ 每日任務 (Samuel) ============ */
+function openDaily(){
+    document.getElementById("dailyBox").classList.add("show");
+    renderDaily();
+}
+function renderDaily(){
+    const date=todayStr();
+    document.getElementById("dailyDate").innerText=date;
+    if(P.daily.date!==date){P.daily.date=date;P.daily.doneQ=[];P.daily.answers={};}
+    P.daily.doneQ=P.daily.doneQ||[];
+    P.daily.answers=P.daily.answers||{};
+    const body=document.getElementById("dailyBody");
+    const done=P.daily.doneQ;
+    if(done.length>=DAILY.length){
+        body.innerHTML='<div style="text-align:center;padding:14px 0;color:#2e9b4f;font-weight:900">今天 6 題全部完成 ✅</div>'+
+            '<div style="font-size:13px;color:#7f9ab3;text-align:center">明天再來找 Samuel 吧！</div>';
+        return;
+    }
+    let html='<div style="font-size:13px;color:#7f9ab3;margin-bottom:8px">每題可以分開提交：填入的數值 ×10 拿點數，答完一題就領一題！</div>';
+    html+='<div id="dailyQList" style="display:flex;flex-direction:column;gap:10px"></div>';
+    body.innerHTML=html;
+    const list=document.getElementById("dailyQList");
+    DAILY.forEach(function(q,i){
+        const isDone=done.indexOf(q.id)>-1;
+        let row='<div class="dq"><div class="sqlabel">'+(i+1)+'. '+q.q+'</div>';
+        if(q.type==="num"){
+            const v=(P.daily.answers[q.id]!==undefined)?P.daily.answers[q.id]:"";
+            row+='<input id="dailyNum'+i+'" class="dqInput" type="number" min="0" step="1" placeholder="輸入數字"'+(isDone?' disabled value="'+v+'">':' value="'+v+'">');
+        }else{
+            row+='<div class="dqOpt" id="dailyOpt'+i+'">'+
+                '<button type="button" class="opt" data-k="'+i+'" data-v="'+q.choices[0].v+'"'+(isDone?' disabled':'')+'>'+q.choices[0].l+'</button>'+
+                '<button type="button" class="opt" data-k="'+i+'" data-v="'+q.choices[1].v+'"'+(isDone?' disabled':'')+'>'+q.choices[1].l+'</button></div>';
+        }
+        row+='<div style="font-size:13px;color:#8aa4bd;margin-top:6px" id="dailyNote'+i+'"></div>';
+        row+='<div style="display:flex;justify-content:flex-end;margin-top:8px">'+
+            (isDone?'<div style="color:#2e9b4f;font-weight:900">✓ 已完成</div>':'<button class="btn btn-main" onclick="dailySubmitQ('+i+')">提交 ✓</button>')+'</div>';
+        row+='</div>';
+        list.insertAdjacentHTML("beforeend",row);
+        const note=document.getElementById("dailyNote"+i);
+        if(isDone){
+            note.innerText="獎勵已領取";
+        }else if(q.type==="num"){
+            note.innerText="填入數字，獎勵 = 數值 ×10 ✨";
+        }else{
+            note.innerText=dailyAnswers[q.id]!==undefined?("✚ 將獲得 "+dailyAnswers[q.id]+" ✨"):"特別獎勵；選擇後提交拿 ✨";
+        }
+    });
+    list.querySelectorAll(".dqOpt").forEach(function(w){
+        w.querySelectorAll(".opt").forEach(function(b){if(b.disabled)b.classList.add("sel");});
+        w.addEventListener("click",function(e){
+            const btn=e.target.closest(".opt");
+            if(!btn)return;
+            w.querySelectorAll(".opt").forEach(function(b){b.classList.remove("sel");});
+            btn.classList.add("sel");
+            const q=DAILY[btn.dataset.k];
+            const c=q.choices.find(function(x){return x.v===btn.dataset.v;});
+            dailyAnswers[q.id]=c.pts;
+            const note=document.getElementById("dailyNote"+btn.dataset.k);
+            if(note)note.innerText="✚ 將獲得 "+c.pts+" ✨";
+        });
+    });
+}
+function dailySubmitQ(i){
+    if(!P.daily||P.daily.date!==todayStr())return;
+    P.daily.doneQ=P.daily.doneQ||[];
+    const q=DAILY[i];
+    if(P.daily.doneQ.indexOf(q.id)>-1){toast("這題今天已完成囉");return;}
+    let v=0,reward=0;
+    if(q.type==="num"){
+        const el=document.getElementById("dailyNum"+i);
+        const n=el?parseInt(el.value,10):NaN;
+        if(isNaN(n)||n<0){toast("請先填入數字！");return;}
+        v=Math.floor(n);
+        reward=v*10;
+    }else{
+        if(dailyAnswers[q.id]===undefined){toast("請先選擇答案！");return;}
+        v=dailyAnswers[q.id];
+        const c=q.choices.find(function(x){return x.pts===v;});
+        reward=c?c.pts:0;
+    }
+    P.daily.answers[q.id]=v;
+    if(q.id==="poo"){P.stats.poo+=v;}
+    if(q.id==="km"){P.stats.km+=v;}
+    if(q.id==="kangaroo"){P.stats.kangaroo+=v;}
+    if(q.id==="aud"){P.stats.aud+=v;}
+    if(q.id==="beach"){P.stats.beach+=v;}
+    if(q.id==="fight"){P.stats.fight=(P.stats.fight||0)+(v>0?0:1);}
+    P.points+=reward;
+    P.daily.doneQ.push(q.id);
+    saveProfile();
+    updateHUD();
+    toast("獲得 "+reward+" ✨！");
+    renderDaily();
+}
+
+/* ============ 猜謎塔 ============ */
+function openTriviaPrompt(){
+    updateZoneBtn();
+    document.getElementById("triviaPrompt").classList.add("show");
+}
+function confirmTrivia(yes){
+    document.getElementById("triviaPrompt").classList.remove("show");
+    if(yes)openTrivia();
+}
+
+/* ============ 冷知識 (猜謎塔) ============ */
+function openTrivia(){
+    document.getElementById("triviaBox").classList.add("show");
+    const body=document.getElementById("triviaBody");
+    const date=todayStr();
+    if(P.trivia.date===date&&P.trivia.done){
+        body.innerHTML='<div style="text-align:center;padding:14px 0;color:#2e9b4f;font-weight:900">今天已經答過囉！</div><div style="font-size:13px;color:#7f9ab3;text-align:center">明天再來挑戰猜謎塔吧</div>';
+        return;
+    }
+    const q=TRIVIA[Math.floor(Math.random()*TRIVIA.length)];
+    currentTrivia=q;
+    let html='<div class="triviaQ">'+q.q+'</div>';
+    q.o.forEach(function(opt,i){
+        html+='<button class="topt" onclick="pickTrivia('+i+')">'+String.fromCharCode(65+i)+'. '+opt+'</button>';
+    });
+    body.innerHTML=html;
+}
+function pickTrivia(i){
+    const q=currentTrivia;
+    const date=todayStr();
+    if(P.trivia.date===date&&P.trivia.done)return;
+    P.trivia.date=date;P.trivia.done=true;
+    const btns=document.querySelectorAll("#triviaBody .topt");
+    btns.forEach(function(b,idx){
+        b.disabled=true;
+        if(idx===q.a){b.classList.add("correct");}
+        else if(idx===i){b.classList.add("wrong");}
+    });
+    if(i===q.a){
+        P.inventory.star=(P.inventory.star||0)+1;
+        saveProfile();
+        toast("✅ 答對了！獲得稀有道具「流星石」");
+        document.getElementById("triviaBody").insertAdjacentHTML("beforeend",'<div style="text-align:center;color:#2e9b4f;font-weight:900;margin-top:8px">答對了！寶物已放進背包</div>');
+    }else{
+        saveProfile();
+        document.getElementById("triviaBody").insertAdjacentHTML("beforeend",'<div style="text-align:center;color:#e04444;font-weight:900;margin-top:8px">答錯了…正確答案是 '+String.fromCharCode(65+q.a)+'</div>');
+    }
+}
+
+/* ============ 女友大哉問 ============ */
+const GIRL_QUIZ=[
+    {q:"我們第一次牽手的地點是？",o:["西子灣","建工路","高流","鹿野高台","車上"],a:2},
+    {q:"我們第一次親親的地點是？",o:["台南海邊","劍湖山","車上","你家門口","大東"],a:0},
+    {q:"初代阿龍的身體顏色是？",o:["紅","白","綠","黃","咖啡"],a:3},
+    {q:"哪個女生沒有講過我壞話？",o:["陳薇如","曾榆庭","林宸汝","温云妃","顔嘉思"],a:4},
+    {q:"哪個樂器我沒有學過？",o:["口琴","小提琴","吉他","爵士鼓","三味線"],a:4},
+    {q:"為何我喜歡一直喵喵叫？",o:["因為我喜歡貓","因為我媽喜歡貓","因為我爸喜歡貓","因為我哥喜歡貓","沒理由，叫爽的"],a:1},
+    {q:"我書櫃上第一張專輯是？",o:["周杰倫","蔡依林","謝和弦","李聖傑","林俊傑"],a:1},
+    {q:"交往第二年的紀念日我們吃了哪間餐廳？",o:["藍記小館","夏慕尼","教父牛排","和牛涮","法客無菜單料理"],a:0},
+    {q:"碩班做實驗時被裝有什麼的針筒插到送高醫？",o:["DCM","THF","CHCl3","DMSO","甲苯"],a:0},
+    {q:"曾是陳智彥的愛將，因為什麼事而殞落？",o:["偷竊投影機","撞壞nano indenter","每天都遲到","meeting上臭臉","拒絕擔任助教"],a:0}
+];
+let girlQuiz=null;
+function newGirlQuiz(){return {i:0,total:0,used:{x2:false,x5:false,half:false,call:false}};}
+function openGirlQuiz(){
+    if(!girlQuiz)girlQuiz=newGirlQuiz();
+    document.getElementById("girlBox").classList.add("show");
+    renderGirlQ();
+    updateZoneBtn();
+}
+function closeGirlQuiz(){
+    document.getElementById("girlBox").classList.remove("show");
+    updateZoneBtn();
+}
+function closeGirlCall(){
+    document.getElementById("girlCallBox").classList.remove("show");
+}
+function renderGirlQ(){
+    if(!girlQuiz)return;
+    const g=girlQuiz;
+    const q=GIRL_QUIZ[g.i];
+    const body=document.getElementById("girlBody");
+    let html='<div style="font-size:13px;color:#7f9ab3;margin-bottom:6px">第 '+(g.i+1)+' / '+GIRL_QUIZ.length+' 題 · 目前累積 '+g.total+' ✨</div>';
+    html+='<div class="triviaQ">'+q.q+'</div>';
+    const removed=g.removed||{};
+    q.o.forEach(function(opt,idx){
+        const dead=g.done||removed[idx];
+        if(g.done){
+            const cls=(idx===q.a)?" topt correct":" topt"+(idx===g.pick?" wrong":"");
+            html+='<button class="'+cls+'" data-oi="'+idx+'"'+(removed[idx]?' style="opacity:.25;background:#eee;color:#888"':"")+' disabled>'+String.fromCharCode(65+idx)+'. '+opt+'</button>';
+        }
+        else if(removed[idx]){html+='<button class="topt" data-oi="'+idx+'" style="opacity:.25;background:#eee;color:#888;pointer-events:none">'+String.fromCharCode(65+idx)+'. '+opt+'</button>';}
+        else{html+='<button class="topt" data-oi="'+idx+'" onclick="pickerGirl('+idx+')">'+String.fromCharCode(65+idx)+'. '+opt+'</button>';}
+    });
+    html+='<div style="font-size:12px;color:#7f9ab3;margin-top:8px">一張卡片每題只能用一次，用了即消耗；答完一題就不能再用卡片</div>';
+    const cards=[
+        ["x2","2X","×2 加分/扣分"],
+        ["x5","5X","×5 加分/扣分"],
+        ["half","60%","刪掉兩個錯答案"],
+        ["call","📞","現場點名求救"]
+    ];
+    html+='<div class="girlCards">';
+    cards.forEach(function(c){
+        const unusable=g.used[c[0]]||g.done;
+        html+='<button class="girlCard'+(unusable?" off":"")+'"'+(unusable?" disabled":"")+' onclick="useGirlCard(\''+c[0]+'\')">'+c[1]+'<br><span style="font-size:10px;font-weight:400;color:#6b8aa8">'+c[2]+'</span></button>';
+    });
+    html+='</div>';
+    html+='<div id="girlRes"></div>';
+    body.innerHTML=html;
+    if(g.done)renderGirlResult(g);
+    const btn=document.getElementById("zoneBtn");
+    if(btn)btn.style.display="none";
+}
+function renderGirlResult(g){
+    const res=document.getElementById("girlRes");
+    if(!res)return;
+    const correct=g.correct;
+    const delta=g.delta;
+    const last=g.i+1>=GIRL_QUIZ.length;
+    res.innerHTML='<div style="text-align:center;margin-top:8px">'+
+        (correct?'<span style="color:#2e9b4f;font-weight:900;font-size:17px">✅ 答對了！</span>':'<span style="color:#e04444;font-weight:900;font-size:17px">❌ 答錯了…</span>')+
+        '<span style="font-size:15px;color:#204060;font-weight:700"> '+((delta>0?"+":"")+delta)+' ✨</span></div>'+
+        '<div style="text-align:center;margin-top:10px">'+
+        (last?'<button class="btn btn-main" style="margin:0 auto;display:block" onclick="finishGirlQuiz()">結算 🎁</button>'+
+        '<div style="text-align:center;margin-top:4px"><button class="btn btn-gray btn-sm" onclick="closeGirlQuiz()">先離開</button></div>':
+        '<button class="btn btn-main" style="margin:0 auto;display:block" onclick="girlNextQ()">下一題 ▸</button>')+'</div>';
+}
+function useGirlCard(k){
+    const g=girlQuiz;
+    if(!g)return;
+    if(g.done){toast("這題已經答完，不能再出卡片囉");return;}
+    if(g.used[k])return;
+    if(g.cardUsed){toast("這題已經用過卡片囉");return;}
+    g.used[k]=true;g.cardUsed=true;
+    if(k==="x2"||k==="x5"){g.mult=k==="x2"?2:5;}
+    else if(k==="half"){
+        const q=GIRL_QUIZ[g.i];
+        const wrongs=[];
+        for(let i=0;i<q.o.length;i++){if(i!==q.a)wrongs.push(i);}
+        wrongs.sort(function(){return Math.random()-0.5;});
+        g.removed={};g.removed[wrongs[0]]=true;g.removed[wrongs[1]]=true;
+    }
+    else if(k==="call"){
+        document.getElementById("girlCallBox").classList.add("show");
+    }
+    renderGirlQ();
+}
+function pickerGirl(i){
+    const g=girlQuiz;
+    if(!g||g.done)return;
+    g.done=true;g.pick=i;
+    const q=GIRL_QUIZ[g.i];
+    const correct=i===q.a;
+    g.correct=correct;
+    const base=correct?1000:-1000;
+    const delta=base*(g.mult||1);
+    g.delta=delta;
+    g.total+=delta;
+    P.points+=delta;
+    saveProfile();
+    updateHUD();
+    renderGirlQ();
+}
+function girlNextQ(){
+    const g=girlQuiz;
+    if(!g)return;
+    g.i++;g.mult=1;g.cardUsed=false;g.done=false;g.removed={};g.pick=null;g.delta=null;g.correct=null;
+    renderGirlQ();
+}
+function finishGirlQuiz(){
+    const t=girlQuizTotal();
+    girlQuiz=null;
+    toast("💘 女友大哉問結束！共獲得 "+t+" ✨");
+    openGirlResult(t);
+}
+function girlQuizTotal(){
+    return girlQuiz?girlQuiz.total:0;
+}
+function openGirlResult(t){
+    document.getElementById("girlBox").classList.add("show");
+    const body=document.getElementById("girlBody");
+    body.innerHTML='<div style="text-align:center;padding:14px 0">'+
+        '<div style="font-size:40px">🎉</div>'+
+        '<div style="font-size:20px;font-weight:900;color:#1b4f8f;margin:8px 0">10 題結束！</div>'+
+        '<div style="font-size:17px;color:#204060">總共得到 <span style="font-weight:900;color:#e07b1f;font-size:22px">'+t+'</span> ✨ 生日點數</div>'+
+        '<div style="margin-top:14px"><button class="btn btn-main" onclick="closeGirlQuiz()">收下點數 ✕</button></div></div>';
+    updateZoneBtn();
+}
+
+/* ============ 旅程結算 ============ */
+function openSettlement(){
+    document.getElementById("settlementBox").classList.add("show");
+    renderSettlement();
+}
+function renderSettlement(){
+    const s=P.stats;
+    document.getElementById("settleBody").innerHTML=
+        '<div style="display:flex;justify-content:space-around;text-align:center;margin-bottom:10px">'+
+        '<div><div style="font-size:30px;font-weight:900;color:#ffb703">'+P.points+'</div><div style="font-size:12px;color:#7f9ab3">生日點數</div></div>'+
+        '<div><div style="font-size:30px;font-weight:900;color:#005f73">'+P.level+'</div><div style="font-size:12px;color:#7f9ab3">等級</div></div>'+
+        '<div><div style="font-size:30px;font-weight:900;color:#457b9d">'+P.photos.length+'</div><div style="font-size:12px;color:#7f9ab3">照片</div></div></div>'+
+        '<div style="background:#fff;border:3px solid #84a7c9;border-radius:10px;padding:12px">'+
+        '<div class="sqlabel">旅程統計</div>'+
+        '<div style="font-size:14px;line-height:1.9">🚽 累積大號：'+s.poo+' 次<br>'+
+        '🚗 開車總里程：'+s.km+' 公里<br>'+
+        '🦘 看到的袋鼠：'+s.kangaroo+' 隻<br>'+
+        '💵 總花費：AUD '+s.aud+'<br>'+
+        '🏖️ 造訪海灘：'+s.beach+' 個<br>'+
+        '💞 吵架次數：'+(s.fight||0)+' 次<br>'+
+        '🎁 開過的寶箱：'+s.chests+' 個</div></div>'+
+        '<div style="text-align:center;margin-top:12px;font-size:14px;color:#7f9ab3">Perth 2026 旅程，未完待續…</div>';
+}
+
+/* ============ F2/F3 編輯 ============ */
+function rebuildCollisionLayer(){
+    const layer=document.getElementById("collisionLayer");
+    layer.innerHTML="";
+    if(!collisions)return;
+    collisions.forEach(function(c,idx){
+        const box=document.createElement("div");
+        box.style.cssText="position:absolute;left:"+toStageFx(c[0])+"%;top:"+toStageFy(c[1])+"%;width:"+(toStageFx(c[0]+c[2])-toStageFx(c[0]))+"%;height:"+(toStageFy(c[1]+c[3])-toStageFy(c[1]))+"%;background:rgba(255,0,0,.25);border:1px solid #f55;pointer-events:auto;";
+        box.dataset.idx=idx;
+        box.onclick=function(e){
+            e.stopPropagation();
+            collisions.splice(idx,1);
+            box.remove();
+        };
+        layer.appendChild(box);
+    });
+}
+const startDraw={x:0,y:0,active:false,box:null};
+function editDrawStart(e){
+    const rect=document.getElementById("gameArea").getBoundingClientRect();
+    startDraw.x=toImageX((e.clientX-rect.left)/rect.width*100);
+    startDraw.y=toImageY((e.clientY-rect.top)/rect.height*100);
+    startDraw.active=true;
+    startDraw.box=document.createElement("div");
+    startDraw.box.style.cssText="position:absolute;border:2px dashed #ffe14d;background:rgba(255,225,77,.15);pointer-events:none;";
+    document.getElementById("collisionLayer").appendChild(startDraw.box);
+}
+function editDrawMove(e){
+    if(!startDraw.active)return;
+    const rect=document.getElementById("gameArea").getBoundingClientRect();
+    const cx=toImageX((e.clientX-rect.left)/rect.width*100);
+    const cy=toImageY((e.clientY-rect.top)/rect.height*100);
+    startDraw.box.style.left=toStageFx(Math.min(startDraw.x,cx))+"%";
+    startDraw.box.style.top=toStageFy(Math.min(startDraw.y,cy))+"%";
+    startDraw.box.style.width=(toStageFx(Math.max(startDraw.x,cx))-toStageFx(Math.min(startDraw.x,cx)))+"%";
+    startDraw.box.style.height=(toStageFy(Math.max(startDraw.y,cy))-toStageFy(Math.min(startDraw.y,cy)))+"%";
+}
+function editDrawEnd(e){
+    if(!startDraw.active)return;
+    startDraw.active=false;
+    const rect=document.getElementById("gameArea").getBoundingClientRect();
+    const cx=toImageX((e.clientX-rect.left)/rect.width*100);
+    const cy=toImageY((e.clientY-rect.top)/rect.height*100);
+    const w=Math.abs(cx-startDraw.x),h=Math.abs(cy-startDraw.y);
+    if(startDraw.box){startDraw.box.remove();startDraw.box=null;}
+    if(w<0.5||h<0.5)return;
+    collisions.push([Math.min(startDraw.x,cx),Math.min(startDraw.y,cy),w,h]);
+    rebuildCollisionLayer();
+}
+document.addEventListener("keydown",function(e){
+    if(e.key==="F2"){
+        e.preventDefault();
+        editMode=!editMode;
+        const layer=document.getElementById("collisionLayer");
+        if(editMode){layer.style.display="block";rebuildCollisionLayer();}
+        else{layer.style.display="none";layer.innerHTML="";}
+        toast(editMode?"碰撞編輯 ON（點紅框刪除、拖曳新增）":"碰撞編輯 OFF");
+    }
+    if(e.key==="F3"){
+        e.preventDefault();
+        const json=JSON.stringify(collisions.map(function(c){return {x:c[0],y:c[1],width:c[2],height:c[3]};}),null,4);
+        const blob=new Blob([json],{type:"application/json"});
+        const a=document.createElement("a");
+        a.href=URL.createObjectURL(blob);
+        a.download=currentMap+".json";
+        a.click();
+        setTimeout(function(){URL.revokeObjectURL(a.href);},1000);
+    }
+});
+(function(){
+    const area=document.getElementById("gameArea");
+    area.addEventListener("mousedown",function(e){if(editMode)editDrawStart(e);});
+    area.addEventListener("mousemove",function(e){editDrawMove(e);});
+    area.addEventListener("mouseup",function(e){editDrawEnd(e);});
+    area.addEventListener("touchstart",function(e){
+        if(!editMode)return;
+        e.preventDefault();
+        const t=e.touches[0];
+        editDrawStart({clientX:t.clientX,clientY:t.clientY});
+    },{passive:false});
+    area.addEventListener("touchmove",function(e){
+        if(!editMode)return;
+        const t=e.touches[0];
+        editDrawMove({clientX:t.clientX,clientY:t.clientY});
+    },{passive:true});
+    area.addEventListener("touchend",function(e){
+        if(!editMode)return;
+        const t=e.changedTouches[0];
+        editDrawEnd({clientX:t.clientX,clientY:t.clientY});
+    },{passive:true});
+    area.addEventListener("click",function(e){
+        if(editMode)return;
+        onAreaClick(e);
+    });
+    window.addEventListener("resize",function(){if(currentUser)refreshView();});
+    window.addEventListener("orientationchange",function(){setTimeout(function(){if(currentUser)refreshView();},150);});
+})();
+loadCollJson();
+</script>
+</body>
+</html>
